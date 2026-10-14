@@ -198,12 +198,15 @@ export const AvailableUnitsStatIcon: React.FC<{ className?: string }> = ({ class
 );
 
 // 13. Give Blood Save Lives Section Component (Bottom of Sidebar)
-export const GiveBloodSaveLivesWidget: React.FC = () => (
-  <div className="px-3.5 py-4 mt-auto border-t border-[#16223d] relative overflow-hidden bg-[#0c1527] select-none flex flex-col items-center justify-center">
+export const GiveBloodSaveLivesWidget: React.FC<{ className?: string; imgClassName?: string }> = ({
+  className = "px-3 py-2.5 mt-auto border-t border-[#16223d] relative overflow-hidden bg-[#0c1527] select-none flex flex-col items-center justify-center",
+  imgClassName = "w-full max-w-[115px] h-auto object-contain pointer-events-none drop-shadow-sm transition-all"
+}) => (
+  <div className={className}>
     <img
       src={giveBloodSaveLivesImg}
       alt="Give Blood Save lives"
-      className="w-full max-w-[204px] h-auto object-contain pointer-events-none drop-shadow-sm"
+      className={imgClassName}
     />
   </div>
 );
