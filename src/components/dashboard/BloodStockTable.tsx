@@ -32,7 +32,7 @@ export const BloodStockTable: React.FC<BloodStockTableProps> = ({ stock, onViewA
       align: 'center',
       className: 'pb-1.5 font-medium text-[10.5px]',
       render: (item) => (
-        <span className="font-bold text-[#0f172a] text-[11.5px]">{item.units}</span>
+        <span className="font-bold text-[#0f172a] dark:text-slate-100 text-[11.5px]">{item.units}</span>
       ),
     },
     {
@@ -44,8 +44,8 @@ export const BloodStockTable: React.FC<BloodStockTableProps> = ({ stock, onViewA
         <span
           className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${
             item.status === 'Good'
-              ? 'bg-[#e6f9ed] text-[#16a34a]'
-              : 'bg-[#fef7e6] text-[#d97706]'
+              ? 'bg-[#e6f9ed] text-[#16a34a] dark:bg-emerald-950/60 dark:text-emerald-400'
+              : 'bg-[#fef7e6] text-[#d97706] dark:bg-amber-950/60 dark:text-amber-400'
           }`}
         >
           {item.status}
@@ -55,9 +55,9 @@ export const BloodStockTable: React.FC<BloodStockTableProps> = ({ stock, onViewA
   ];
 
   return (
-    <div className="bg-white rounded-2xl p-4 sm:p-4.5 border border-slate-100 shadow-[0_1px_4px_rgba(0,0,0,0.02)] flex flex-col h-full">
+    <div className="bg-white dark:bg-[#0c1527] rounded-2xl p-4 sm:p-4.5 border border-slate-100 dark:border-slate-800 shadow-[0_1px_4px_rgba(0,0,0,0.02)] flex flex-col h-full transition-colors">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="font-bold text-[#0f172a] text-[14px]">Blood Stock</h3>
+        <h3 className="font-bold text-[#0f172a] dark:text-white text-[14px]">Blood Stock</h3>
         {onViewAll && (
           <button
             onClick={onViewAll}

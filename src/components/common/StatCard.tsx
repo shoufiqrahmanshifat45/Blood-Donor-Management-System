@@ -28,7 +28,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`bg-white rounded-2xl p-4 sm:p-5 border border-slate-100/90 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all duration-200 flex items-center gap-4 ${
+      className={`bg-white dark:bg-[#0c1527] rounded-2xl p-4 sm:p-5 border border-slate-100/90 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all duration-200 flex items-center gap-4 ${
         onClick ? 'cursor-pointer hover:-translate-y-0.5' : ''
       } ${className}`}
     >
@@ -41,10 +41,10 @@ export const StatCard: React.FC<StatCardProps> = ({
 
       {/* Metric Content */}
       <div className="flex-1 min-w-0">
-        <p className="text-[12px] font-medium text-slate-500 truncate leading-tight">
+        <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400 truncate leading-tight">
           {title}
         </p>
-        <p className="text-[23px] sm:text-[25px] font-bold text-[#0f172a] tracking-tight leading-tight mt-0.5">
+        <p className="text-[23px] sm:text-[25px] font-bold text-[#0f172a] dark:text-white tracking-tight leading-tight mt-0.5">
           {value}
         </p>
         <div className="flex items-center gap-1.5 mt-1 text-[11px] font-medium leading-none">

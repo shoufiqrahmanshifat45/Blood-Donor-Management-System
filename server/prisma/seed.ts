@@ -22,7 +22,7 @@ async function main() {
   // 2. Seed Default Admin User
   const admin = await prisma.adminUser.create({
     data: {
-      name: 'Shifat Rahman',
+      name: 'Shoufiq Rahman Shifat',
       email: 'admin@blooddonor.org',
       password: '$2b$10$YourHashedPasswordHereOrBcryptString', // In production, hash with bcrypt
       role: 'SuperAdmin',

@@ -26,13 +26,13 @@ export const BloodGroupSearch: React.FC<BloodGroupSearchProps> = ({ onSearch, is
   };
 
   return (
-    <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_1px_6px_rgba(0,0,0,0.02)]">
+    <div className="bg-white dark:bg-[#0c1527] rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-[0_1px_6px_rgba(0,0,0,0.02)] transition-colors">
       {/* Header matching reference mockup */}
       <div className="flex items-center gap-3 mb-4">
         <SearchBloodGroupHeaderLogo className="w-7 h-8 shrink-0" />
         <div>
-          <h3 className="font-bold text-[#0f172a] text-[15px] leading-tight">Search Blood Group</h3>
-          <p className="text-[11px] text-slate-500 mt-0.5">Find donors by blood group and location</p>
+          <h3 className="font-bold text-[#0f172a] dark:text-white text-[15px] leading-tight">Search Blood Group</h3>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Find donors by blood group and location</p>
         </div>
       </div>
 

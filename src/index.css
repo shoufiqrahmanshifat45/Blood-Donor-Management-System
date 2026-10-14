@@ -4,10 +4,41 @@
 
 @layer base {
   body {
-    @apply bg-[#f4f7fb] text-slate-800 font-sans;
+    @apply bg-[#f4f7fb] dark:bg-[#070d19] text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+}
+
+/* Custom Mode: Crimson Midnight Luxury Accents */
+html.theme-custom {
+  --accent-glow: rgba(239, 68, 68, 0.15);
+}
+
+html.theme-custom[data-accent="crimson"] {
+  --accent-glow: rgba(239, 68, 68, 0.2);
+}
+
+html.theme-custom[data-accent="sapphire"] {
+  --accent-glow: rgba(37, 99, 235, 0.2);
+}
+
+html.theme-custom[data-accent="emerald"] {
+  --accent-glow: rgba(16, 185, 129, 0.2);
+}
+
+html.theme-custom[data-accent="amethyst"] {
+  --accent-glow: rgba(139, 92, 246, 0.2);
+}
+
+html.theme-custom body {
+  background-color: #060913 !important;
+}
+
+html.theme-custom .bg-white {
+  background-color: #0a0f1d !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px -2px var(--accent-glow) !important;
 }
 
 /* Custom scrollbar for sleek dashboard UI */
@@ -25,8 +56,16 @@
   border-radius: 9999px;
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
 }
 
 .font-script {

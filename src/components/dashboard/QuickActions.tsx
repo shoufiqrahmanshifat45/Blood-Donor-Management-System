@@ -47,9 +47,9 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onActionClick }) => 
   ];
 
   return (
-    <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_1px_6px_rgba(0,0,0,0.02)] flex flex-col flex-1">
+    <div className="bg-white dark:bg-[#0c1527] rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-[0_1px_6px_rgba(0,0,0,0.02)] flex flex-col flex-1 transition-colors">
       <div className="flex items-center justify-between mb-3.5">
-        <h3 className="font-bold text-[#0f172a] text-[15px]">Quick Actions</h3>
+        <h3 className="font-bold text-[#0f172a] dark:text-white text-[15px]">Quick Actions</h3>
       </div>
 
       <div className="grid grid-cols-2 gap-3 flex-1">
@@ -62,8 +62,8 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onActionClick }) => 
               onClick={() => onActionClick(act.id)}
               className={`group flex flex-col items-center justify-center p-3 rounded-xl border transition-all text-center min-h-[82px] ${
                 isSelected
-                  ? 'border-[#3b82f6] bg-[#eff6ff]/60 shadow-xs'
-                  : 'border-slate-200/70 hover:border-red-200 hover:shadow-xs bg-white hover:bg-slate-50/50'
+                  ? 'border-[#3b82f6] dark:border-blue-500 bg-[#eff6ff]/60 dark:bg-blue-950/40 shadow-xs'
+                  : 'border-slate-200/70 dark:border-slate-800 hover:border-red-200 dark:hover:border-slate-700 hover:shadow-xs bg-white dark:bg-[#111c34] hover:bg-slate-50/50 dark:hover:bg-[#152342]'
               }`}
             >
               <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-1.5 transition-transform group-hover:scale-105">
@@ -71,7 +71,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onActionClick }) => 
               </div>
               <span
                 className={`text-[11px] font-semibold transition-colors leading-tight ${
-                  isSelected ? 'text-[#2563eb]' : 'text-slate-700 group-hover:text-red-600'
+                  isSelected ? 'text-[#2563eb] dark:text-blue-400' : 'text-slate-700 dark:text-slate-200 group-hover:text-red-600 dark:group-hover:text-red-400'
                 }`}
               >
                 {act.title}

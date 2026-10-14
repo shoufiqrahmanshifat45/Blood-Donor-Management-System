@@ -36,8 +36,8 @@ export const GenderDistributionChart: React.FC<GenderDistributionChartProps> = (
 
           {/* Centered Total Indicator */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-[9.5px] uppercase tracking-wider font-semibold text-slate-400">Total Donors</span>
-            <span className="text-[16px] font-bold text-[#0f172a] leading-tight">{totalDonors}</span>
+            <span className="text-[9.5px] uppercase tracking-wider font-semibold text-slate-400 dark:text-slate-500">Total Donors</span>
+            <span className="text-[16px] font-bold text-[#0f172a] dark:text-white leading-tight">{totalDonors}</span>
           </div>
         </div>
 
@@ -50,11 +50,11 @@ export const GenderDistributionChart: React.FC<GenderDistributionChartProps> = (
                   className="w-2 h-2 rounded-full shrink-0 shadow-xs"
                   style={{ backgroundColor: item.color }}
                 />
-                <span className="font-medium text-slate-700">{item.name}</span>
+                <span className="font-medium text-slate-700 dark:text-slate-300">{item.name}</span>
               </div>
               <div className="text-right">
-                <span className="font-bold text-[#0f172a]">{item.percentage}%</span>
-                <span className="text-slate-400 ml-1 font-normal">({item.count})</span>
+                <span className="font-bold text-[#0f172a] dark:text-white">{item.percentage}%</span>
+                <span className="text-slate-400 dark:text-slate-400 ml-1 font-normal">({item.count})</span>
               </div>
             </div>
           ))}

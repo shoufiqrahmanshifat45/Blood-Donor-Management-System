@@ -28,7 +28,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       {label && (
         <label
           htmlFor={htmlFor}
-          className="block text-[12px] font-semibold text-slate-700 tracking-tight"
+          className="block text-[12px] font-semibold text-slate-700 dark:text-slate-300 tracking-tight"
         >
           {label} {required && <span className="text-red-500">*</span>}
         </label>
@@ -37,7 +37,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       {error ? (
         <p className="text-[11px] text-red-500 font-medium">{error}</p>
       ) : hint ? (
-        <p className="text-[11px] text-slate-400">{hint}</p>
+        <p className="text-[11px] text-slate-400 dark:text-slate-400">{hint}</p>
       ) : null}
     </div>
   );
@@ -63,12 +63,12 @@ export const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(
         )}
         <input
           ref={ref}
-          className={`w-full py-2 bg-slate-50 border rounded-xl text-[13px] text-slate-800 placeholder-slate-400 transition-all focus:outline-none focus:bg-white focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+          className={`w-full py-2 bg-slate-50 dark:bg-[#111c34] border rounded-xl text-[13px] text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 transition-all focus:outline-none focus:bg-white dark:focus:bg-[#162340] focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed ${
             leftIcon ? 'pl-9' : 'pl-3.5'
           } ${rightIcon ? 'pr-9' : 'pr-3.5'} ${
             error
               ? 'border-red-400 focus:border-red-500 focus:ring-red-500/20'
-              : 'border-slate-200/90 focus:border-red-500 focus:ring-red-500/15'
+              : 'border-slate-200/90 dark:border-slate-700 focus:border-red-500 focus:ring-red-500/15'
           } ${className}`}
           {...props}
         />
@@ -97,16 +97,16 @@ export const SelectInput = React.forwardRef<HTMLSelectElement, SelectInputProps>
     return (
       <select
         ref={ref}
-        className={`w-full py-2 px-3 bg-slate-50 border rounded-xl text-[13px] text-slate-800 transition-all focus:outline-none focus:bg-white focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`w-full py-2 px-3 bg-slate-50 dark:bg-[#111c34] border rounded-xl text-[13px] text-slate-800 dark:text-slate-100 transition-all focus:outline-none focus:bg-white dark:focus:bg-[#162340] focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed ${
           error
             ? 'border-red-400 focus:border-red-500 focus:ring-red-500/20'
-            : 'border-slate-200/90 focus:border-red-500 focus:ring-red-500/15'
+            : 'border-slate-200/90 dark:border-slate-700 focus:border-red-500 focus:ring-red-500/15'
         } ${className}`}
         {...props}
       >
         {placeholder && <option value="">{placeholder}</option>}
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
+          <option key={opt.value} value={opt.value} className="bg-white dark:bg-[#111c34] text-slate-800 dark:text-slate-100">
             {opt.label}
           </option>
         ))}
@@ -145,11 +145,11 @@ export const Button: React.FC<ButtonProps> = ({
     primary:
       'bg-[#ef4444] hover:bg-[#dc2626] text-white shadow-sm shadow-red-500/20 focus:ring-red-500 active:scale-[0.98]',
     secondary:
-      'bg-slate-100 hover:bg-slate-200 text-slate-700 focus:ring-slate-300 active:scale-[0.98]',
+      'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 focus:ring-slate-300 active:scale-[0.98]',
     outline:
-      'bg-transparent border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 focus:ring-slate-300',
+      'bg-transparent border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 focus:ring-slate-300',
     ghost:
-      'bg-transparent hover:bg-slate-100 text-slate-600 hover:text-slate-900 focus:ring-slate-200',
+      'bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white focus:ring-slate-200',
     danger:
       'bg-red-600 hover:bg-red-700 text-white shadow-sm focus:ring-red-500 active:scale-[0.98]',
   };

@@ -12,6 +12,8 @@ import { QuickActions } from './components/dashboard/QuickActions';
 import { BloodGroupSearch } from './components/dashboard/BloodGroupSearch';
 import { ActionModals } from './components/modals/ActionModals';
 import { NotificationProvider, useNotification } from './context/NotificationContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { RealTimeClock } from './components/common/RealTimeClock';
 import { useDashboardData } from './hooks/useDashboardData';
 import {
   StatCardSkeleton,
@@ -118,7 +120,7 @@ const DashboardContent: React.FC = () => {
     : RECENT_BLOOD_REQUESTS;
 
   return (
-    <div className="min-h-screen bg-[#f3f6fa] flex flex-row font-sans text-slate-800 antialiased selection:bg-red-500 selection:text-white">
+    <div className="min-h-screen bg-[#f3f6fa] dark:bg-[#070d19] flex flex-row font-sans text-slate-800 dark:text-slate-100 antialiased selection:bg-red-500 selection:text-white transition-colors">
       {/* Sidebar Navigation (240px wide on desktop) */}
       <div
         className={`fixed inset-y-0 left-0 z-40 transform lg:relative lg:translate-x-0 transition-transform duration-200 ease-in-out ${
@@ -170,14 +172,14 @@ const DashboardContent: React.FC = () => {
           <div className="flex flex-col xl:flex-row gap-3.5 items-start">
             {/* Left Main Section */}
             <div className="flex-1 min-w-0 space-y-3 w-full">
-              {/* Header Row: Dashboard Title, Subtitle, and Date chip */}
+              {/* Header Row: Dashboard Title, Subtitle, and Real-Time Clock */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 h-[44px]">
                 <div>
-                  <h1 className="text-[23px] font-bold text-[#0f172a] tracking-tight leading-tight">
+                  <h1 className="text-[23px] font-bold text-[#0f172a] dark:text-white tracking-tight leading-tight">
                     Dashboard
                   </h1>
-                  <p className="text-[12px] text-slate-500 mt-0.5">
-                    Welcome back, Shifat! Here's an overview of the blood donor management system.
+                  <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    Welcome back, Shoufiq Rahman Shifat! Here's an overview of the blood donor management system.
                   </p>
                 </div>
 
@@ -185,18 +187,15 @@ const DashboardContent: React.FC = () => {
                   {/* Refresh Button */}
                   <button
                     onClick={refresh}
-                    className="p-1.5 bg-white border border-slate-200/70 hover:border-slate-300 rounded-xl text-slate-500 hover:text-slate-800 transition-colors shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
+                    className="p-1.5 bg-white dark:bg-[#0f172a] border border-slate-200/70 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
                     title="Refresh data"
                     aria-label="Refresh data"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                   </button>
 
-                  {/* Date Chip matching screenshot */}
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200/70 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] text-[11px] font-medium text-slate-600">
-                    <CalendarIcon className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Tuesday, 7 Oct 2025</span>
-                  </div>
+                  {/* Real Date and Time Feature */}
+                  <RealTimeClock />
                 </div>
               </div>
 
@@ -290,9 +289,11 @@ const DashboardContent: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <NotificationProvider>
-      <DashboardContent />
-    </NotificationProvider>
+    <ThemeProvider>
+      <NotificationProvider>
+        <DashboardContent />
+      </NotificationProvider>
+    </ThemeProvider>
   );
 };
 

@@ -32,13 +32,13 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
   return (
     <div className={`relative flex flex-col ${className}`}>
       {label && (
-        <label htmlFor={id} className="text-[11.5px] font-medium text-slate-500 mb-1">
+        <label htmlFor={id} className="text-[11.5px] font-medium text-slate-500 dark:text-slate-400 mb-1">
           {label}
         </label>
       )}
       <div className="relative flex items-center">
         {icon && (
-          <div className="absolute left-3.5 pointer-events-none text-slate-400 flex items-center justify-center">
+          <div className="absolute left-3.5 pointer-events-none text-slate-400 dark:text-slate-400 flex items-center justify-center">
             {icon}
           </div>
         )}
@@ -47,18 +47,18 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
-          className={`w-full appearance-none bg-white border border-slate-200/90 hover:border-slate-300 focus:border-red-500 rounded-xl py-2.5 text-[12.5px] font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500/15 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+          className={`w-full appearance-none bg-white dark:bg-[#111c34] border border-slate-200/90 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 focus:border-red-500 rounded-xl py-2.5 text-[12.5px] font-medium text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-red-500/15 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
             icon ? 'pl-9 pr-9' : 'pl-3.5 pr-9'
           }`}
         >
           {placeholder && <option value="">{placeholder}</option>}
           {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
+            <option key={opt.value} value={opt.value} className="bg-white dark:bg-[#111c34] text-slate-700 dark:text-slate-200">
               {opt.label}
             </option>
           ))}
         </select>
-        <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 pointer-events-none stroke-[2]" />
+        <ChevronDown className="w-4 h-4 text-slate-400 dark:text-slate-400 absolute right-3 pointer-events-none stroke-[2]" />
       </div>
     </div>
   );

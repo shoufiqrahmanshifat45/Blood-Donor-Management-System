@@ -1,6 +1,7 @@
 import React from 'react';
 import { Menu, Search, Bell } from 'lucide-react';
 import adminPhoto from '../../assets/admin-photo.png';
+import { ThemeToggle } from '../common/ThemeToggle';
 
 interface NavbarProps {
   onMenuToggle?: () => void;
@@ -10,12 +11,12 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, searchQuery, onSearchChange }) => {
   return (
-    <header className="h-16 bg-white border-b border-slate-100 px-6 flex items-center justify-between sticky top-0 z-20">
+    <header className="h-16 bg-white dark:bg-[#0c1527] border-b border-slate-100 dark:border-slate-800/90 px-6 flex items-center justify-between sticky top-0 z-20 transition-colors">
       {/* Left: Hamburger menu toggle + Long Search Field */}
       <div className="flex items-center gap-4 flex-1">
         <button
           onClick={onMenuToggle}
-          className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors shrink-0"
+          className="p-1.5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors shrink-0"
           title="Toggle Navigation"
           aria-label="Toggle Navigation"
         >
@@ -29,36 +30,39 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, searchQuery, onSea
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search donors, blood group, or request ID..."
-            className="w-full pl-10 pr-4 py-2 bg-[#f1f5f9]/80 hover:bg-[#edf2f7] focus:bg-white border-none rounded-xl text-xs md:text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all"
+            className="w-full pl-10 pr-4 py-2 bg-[#f1f5f9]/80 dark:bg-[#131d33] hover:bg-[#edf2f7] dark:hover:bg-[#182542] focus:bg-white dark:focus:bg-[#15213b] border-none rounded-xl text-xs md:text-sm text-slate-700 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all"
           />
         </div>
       </div>
 
-      {/* Right: Notifications & User Profile */}
-      <div className="flex items-center gap-4 sm:gap-6 shrink-0">
+      {/* Right: Theme Toggle, Notifications & User Profile */}
+      <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+        {/* Theme Selector (Light / Dark / System / Custom) */}
+        <ThemeToggle />
+
         {/* Notification Bell */}
         <button
-          className="relative p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
+          className="relative p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
           aria-label="Notifications"
         >
           <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#ef4444] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-xs">
+          <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#ef4444] text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-[#0c1527] shadow-xs">
             3
           </span>
         </button>
 
         {/* User Profile */}
         <div className="flex items-center gap-2.5 cursor-pointer hover:opacity-95 transition-opacity">
-          <div className="w-10 h-10 rounded-full ring-2 ring-slate-200 overflow-hidden bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-xs">
+          <div className="w-10 h-10 rounded-full ring-2 ring-slate-200 dark:ring-slate-700 overflow-hidden bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-xs">
             <img
               src={adminPhoto}
-              alt="Shifat Rahman"
+              alt="Shoufiq Rahman Shifat"
               className="w-full h-full object-cover object-center"
             />
           </div>
           <div className="hidden sm:block text-left">
-            <p className="text-[13px] font-bold text-[#0f172a] leading-tight">
-              Shifat Rahman
+            <p className="text-[13px] font-bold text-[#0f172a] dark:text-white leading-tight">
+              Shoufiq Rahman Shifat
             </p>
             <p className="text-[11px] text-slate-400 font-medium leading-none mt-0.5">Admin</p>
           </div>

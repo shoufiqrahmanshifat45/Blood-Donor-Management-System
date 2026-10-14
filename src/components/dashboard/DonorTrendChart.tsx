@@ -11,21 +11,25 @@ import {
 } from 'recharts';
 import { RegistrationTrendPoint } from '../../types/dashboard';
 import { ChartCard } from '../common/ChartCard';
+import { useTheme } from '../../context/ThemeContext';
 
 interface DonorTrendChartProps {
   data: RegistrationTrendPoint[];
 }
 
 export const DonorTrendChart: React.FC<DonorTrendChartProps> = ({ data }) => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+
   const legend = (
     <div className="flex items-center gap-3.5 text-xs">
       <div className="flex items-center gap-1.5">
         <span className="w-2 h-2 rounded-full bg-[#ef4444]" />
-        <span className="text-slate-600 font-medium text-[11px]">New Donors</span>
+        <span className="text-slate-600 dark:text-slate-300 font-medium text-[11px]">New Donors</span>
       </div>
       <div className="flex items-center gap-1.5">
         <span className="w-2 h-2 rounded-full bg-[#f472b6]" />
-        <span className="text-slate-600 font-medium text-[11px]">Total Donors</span>
+        <span className="text-slate-600 dark:text-slate-300 font-medium text-[11px]">Total Donors</span>
       </div>
     </div>
   );
@@ -44,28 +48,28 @@ export const DonorTrendChart: React.FC<DonorTrendChartProps> = ({ data }) => {
           >
             <defs>
               <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.15} />
+                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2} />
                 <stop offset="95%" stopColor="#ef4444" stopOpacity={0.01} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? '#1e293b' : '#f1f5f9'} />
             <XAxis
               dataKey="month"
               tickLine={false}
-              axisLine={{ stroke: '#e2e8f0' }}
-              tick={{ fill: '#64748b', fontSize: 10, fontWeight: 500 }}
+              axisLine={{ stroke: isDark ? '#334155' : '#e2e8f0' }}
+              tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 10, fontWeight: 500 }}
             />
             <YAxis
               domain={[0, 250]}
               ticks={[0, 50, 100, 150, 200, 250]}
               tickLine={false}
-              axisLine={{ stroke: '#e2e8f0' }}
-              tick={{ fill: '#64748b', fontSize: 10 }}
+              axisLine={{ stroke: isDark ? '#334155' : '#e2e8f0' }}
+              tick={{ fill: isDark ? '#64748b' : '#64748b', fontSize: 10 }}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#0f172a',
-                border: 'none',
+                backgroundColor: isDark ? '#020617' : '#0f172a',
+                border: isDark ? '1px solid #334155' : 'none',
                 borderRadius: '8px',
                 color: '#fff',
                 fontSize: '11px',
@@ -78,7 +82,7 @@ export const DonorTrendChart: React.FC<DonorTrendChartProps> = ({ data }) => {
               dataKey="totalDonors"
               stroke="#f472b6"
               strokeWidth={2}
-              dot={{ r: 2.5, fill: '#f472b6', strokeWidth: 1.5, stroke: '#fff' }}
+              dot={{ r: 2.5, fill: '#f472b6', strokeWidth: 1.5, stroke: isDark ? '#0f172a' : '#fff' }}
               activeDot={{ r: 4.5 }}
             />
             {/* New Donors curve with area fill (red) */}
@@ -88,7 +92,7 @@ export const DonorTrendChart: React.FC<DonorTrendChartProps> = ({ data }) => {
               stroke="#ef4444"
               strokeWidth={2}
               fill="url(#trendGradient)"
-              dot={{ r: 2.5, fill: '#ef4444', strokeWidth: 1.5, stroke: '#fff' }}
+              dot={{ r: 2.5, fill: '#ef4444', strokeWidth: 1.5, stroke: isDark ? '#0f172a' : '#fff' }}
               activeDot={{ r: 4.5 }}
             />
           </ComposedChart>

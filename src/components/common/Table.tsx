@@ -31,7 +31,7 @@ export function Table<T>({
     <div className={`w-full overflow-x-auto ${className}`}>
       <table className="w-full text-left border-collapse">
         <thead>
-          <tr className="border-b border-slate-100/90 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+          <tr className="border-b border-slate-100/90 dark:border-slate-800 text-[11px] font-semibold text-slate-400 dark:text-slate-400 uppercase tracking-wider">
             {columns.map((col) => (
               <th
                 key={col.key}
@@ -48,12 +48,12 @@ export function Table<T>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-50/90 text-[12px] text-slate-700">
+        <tbody className="divide-y divide-slate-50/90 dark:divide-slate-800/60 text-[12px] text-slate-700 dark:text-slate-200">
           {data.length === 0 ? (
             <tr>
               <td
                 colSpan={columns.length}
-                className="py-6 text-center text-slate-400 text-xs italic"
+                className="py-6 text-center text-slate-400 dark:text-slate-400 text-xs italic"
               >
                 {emptyMessage}
               </td>
@@ -65,8 +65,8 @@ export function Table<T>({
                 onClick={() => onRowClick && onRowClick(item)}
                 className={`transition-colors ${
                   onRowClick
-                    ? 'cursor-pointer hover:bg-slate-50/80'
-                    : 'hover:bg-slate-50/40'
+                    ? 'cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-800/60'
+                    : 'hover:bg-slate-50/40 dark:hover:bg-slate-800/30'
                 }`}
               >
                 {columns.map((col) => (

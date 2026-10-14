@@ -68,22 +68,22 @@ export const Dialog: React.FC<DialogProps> = ({
 
       {/* Modal Dialog Card */}
       <div
-        className={`relative w-full ${maxWidthStyles[maxWidth]} bg-white rounded-2xl shadow-2xl border border-slate-100 flex flex-col z-10 overflow-hidden transform transition-all duration-200 animate-in zoom-in-95 ${className}`}
+        className={`relative w-full ${maxWidthStyles[maxWidth]} bg-white dark:bg-[#0c1527] rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 flex flex-col z-10 overflow-hidden transform transition-all duration-200 animate-in zoom-in-95 ${className}`}
       >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3 bg-slate-50/50">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-900/60">
           <div className="flex items-center gap-3 min-w-0">
             {icon && (
-              <div className="w-9 h-9 rounded-xl bg-red-50 text-red-600 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
                 {icon}
               </div>
             )}
             <div className="min-w-0">
-              <h3 className="text-[15px] font-bold text-slate-900 truncate leading-tight">
+              <h3 className="text-[15px] font-bold text-slate-900 dark:text-white truncate leading-tight">
                 {title}
               </h3>
               {description && (
-                <p className="text-[12px] text-slate-500 mt-0.5 leading-snug">
+                <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
                   {description}
                 </p>
               )}
@@ -91,7 +91,7 @@ export const Dialog: React.FC<DialogProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors shrink-0"
+            className="p-1.5 text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors shrink-0"
             aria-label="Close dialog"
           >
             <X className="w-4 h-4" />
@@ -99,13 +99,13 @@ export const Dialog: React.FC<DialogProps> = ({
         </div>
 
         {/* Scrollable Body */}
-        <div className="px-6 py-5 overflow-y-auto max-h-[75vh] space-y-4 text-slate-700 text-sm">
+        <div className="px-6 py-5 overflow-y-auto max-h-[75vh] space-y-4 text-slate-700 dark:text-slate-200 text-sm">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
+          <div className="px-6 py-3.5 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5">
             {footer}
           </div>
         )}
