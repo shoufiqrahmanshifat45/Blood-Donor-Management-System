@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Droplet, FileText, ArrowUp, ArrowDown } from 'lucide-react';
+import { User, Droplet, FileText, ArrowUp, ArrowDown } from 'lucide-react';
 import { StatMetric } from '../../types/dashboard';
 
 interface StatCardsProps {
@@ -27,7 +27,7 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats }) => {
                   : 'bg-[#10b981] text-white'
               }`}
             >
-              {stat.id === 'total-donors' && <Users className="w-6 h-6 stroke-[2.2]" />}
+              {stat.id === 'total-donors' && <User className="w-6 h-6 stroke-[2.2]" />}
               {stat.id === 'total-donations' && <Droplet className="w-6 h-6 fill-white stroke-none" />}
               {stat.id === 'blood-requests' && <FileText className="w-6 h-6 stroke-[2.2]" />}
               {stat.id === 'available-units' && <Droplet className="w-6 h-6 fill-white stroke-none" />}

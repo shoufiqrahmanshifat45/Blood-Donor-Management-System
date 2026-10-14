@@ -1,5 +1,6 @@
 import React from 'react';
 import { BloodStockItem } from '../../types/dashboard';
+import { getBloodGroupColor } from '../../utils/bloodGroupColors';
 
 interface BloodStockTableProps {
   stock: BloodStockItem[];
@@ -29,35 +30,36 @@ export const BloodStockTable: React.FC<BloodStockTableProps> = ({ stock, onViewA
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-50">
-            {stock.map((item) => (
-              <tr key={item.bloodGroup} className="hover:bg-slate-50/60 transition-colors">
-                <td className="py-1">
-                  <span
-                    className={`inline-flex items-center justify-center w-5.5 h-4.5 rounded text-[10px] font-bold text-white shadow-2xs ${
-                      item.bloodGroup === 'A-' || item.bloodGroup === 'O-'
-                        ? 'bg-[#2563eb]'
-                        : 'bg-[#ef4444]'
-                    }`}
-                  >
-                    {item.bloodGroup}
-                  </span>
-                </td>
-                <td className="py-1 text-center font-bold text-[#0f172a] text-[11.5px]">
-                  {item.units}
-                </td>
-                <td className="py-1 text-right">
-                  <span
-                    className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                      item.status === 'Good'
-                        ? 'bg-[#e6f9ed] text-[#16a34a]'
-                        : 'bg-[#fef7e6] text-[#d97706]'
-                    }`}
-                  >
-                    {item.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
+            {stock.map((item) => {
+              const colorDef = getBloodGroupColor(item.bloodGroup);
+              return (
+                <tr key={item.bloodGroup} className="hover:bg-slate-50/60 transition-colors">
+                  <td className="py-1">
+                    {/* Equal Rectangular Shape with Unique Blood Group Color */}
+                    <span
+                      style={{ backgroundColor: colorDef.hex }}
+                      className="w-[34px] h-[22px] rounded text-[10.5px] font-bold text-white shadow-xs inline-flex items-center justify-center shrink-0 tracking-tight"
+                    >
+                      {item.bloodGroup}
+                    </span>
+                  </td>
+                  <td className="py-1 text-center font-bold text-[#0f172a] text-[11.5px]">
+                    {item.units}
+                  </td>
+                  <td className="py-1 text-right">
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                        item.status === 'Good'
+                          ? 'bg-[#e6f9ed] text-[#16a34a]'
+                          : 'bg-[#fef7e6] text-[#d97706]'
+                      }`}
+                    >
+                      {item.status}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Menu, Search, Bell } from 'lucide-react';
+import adminPhoto from '../../assets/admin-photo.png';
 
 interface NavbarProps {
   onMenuToggle?: () => void;
@@ -47,16 +48,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, searchQuery, onSea
         </button>
 
         {/* User Profile */}
-        <div className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity">
-          <div className="w-9 h-9 rounded-full ring-1 ring-slate-200 overflow-hidden bg-slate-800 flex items-center justify-center text-white shrink-0">
+        <div className="flex items-center gap-2.5 cursor-pointer hover:opacity-95 transition-opacity">
+          <div className="w-10 h-10 rounded-full ring-2 ring-slate-200 overflow-hidden bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-xs">
             <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80"
-              alt="Shifat Rahman"
-              className="w-full h-full object-cover"
+              src={adminPhoto}
+              alt="Shoufiq Rahman Shifat"
+              className="w-full h-full object-cover object-top"
             />
           </div>
           <div className="hidden sm:block text-left">
-            <p className="text-[13px] font-bold text-[#0f172a] leading-tight">Shifat Rahman</p>
+            <p className="text-[13px] font-bold text-[#0f172a] leading-tight">
+              Shoufiq Rahman Shifat
+            </p>
             <p className="text-[11px] text-slate-400 font-medium leading-none mt-0.5">Admin</p>
           </div>
         </div>

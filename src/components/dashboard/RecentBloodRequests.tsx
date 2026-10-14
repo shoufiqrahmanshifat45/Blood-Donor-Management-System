@@ -1,5 +1,6 @@
 import React from 'react';
 import { BloodRequest } from '../../types/dashboard';
+import { getBloodGroupColor } from '../../utils/bloodGroupColors';
 
 interface RecentBloodRequestsProps {
   requests: BloodRequest[];
@@ -24,18 +25,16 @@ export const RecentBloodRequests: React.FC<RecentBloodRequestsProps> = ({
 
       <div className="space-y-3.5 flex-1">
         {requests.map((req) => {
+          const colorDef = getBloodGroupColor(req.bloodGroup);
           return (
             <div
               key={req.id}
               className="flex items-center justify-between gap-3 p-1 rounded-xl hover:bg-slate-50/70 transition-colors"
             >
-              {/* Blood Group Badge */}
+              {/* Equal Rectangular Shape with Unique Blood Group Color */}
               <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs text-white shrink-0 shadow-xs ${
-                  req.bloodGroupColor === 'blue'
-                    ? 'bg-[#2563eb]'
-                    : 'bg-[#ef4444]'
-                }`}
+                style={{ backgroundColor: colorDef.hex }}
+                className="w-[38px] h-[30px] rounded-lg inline-flex items-center justify-center font-bold text-[11.5px] text-white shrink-0 shadow-xs tracking-tight"
               >
                 {req.bloodGroup}
               </div>

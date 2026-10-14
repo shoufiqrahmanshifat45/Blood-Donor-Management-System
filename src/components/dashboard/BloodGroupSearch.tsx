@@ -25,8 +25,8 @@ export const BloodGroupSearch: React.FC<BloodGroupSearchProps> = ({ onSearch }) 
     <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_1px_6px_rgba(0,0,0,0.02)]">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 rounded-xl bg-red-50 text-red-500 flex items-center justify-center shrink-0">
-          <Droplet className="w-5 h-5 fill-[#ef4444] text-[#ef4444]" />
+        <div className="w-9 h-9 rounded-xl bg-[#ef4444] text-white flex items-center justify-center shrink-0 shadow-xs">
+          <Droplet className="w-5 h-5 fill-white stroke-none" />
         </div>
         <div>
           <h3 className="font-bold text-[#0f172a] text-[15px] leading-tight">Search Blood Group</h3>
@@ -81,12 +81,12 @@ export const BloodGroupSearch: React.FC<BloodGroupSearchProps> = ({ onSearch }) 
 
         {/* Select Thana (Optional) */}
         <div className="relative">
-          <Landmark className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Landmark className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <select
             value={thana}
             onChange={(e) => setThana(e.target.value)}
             disabled={!district || thanas.length === 0}
-            className="w-full pl-9 pr-8 py-2.5 bg-[#f8fafc] hover:bg-[#f1f5f9] focus:bg-white border border-slate-200/80 rounded-xl text-xs md:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+            className="w-full pl-8 pr-6 py-2.5 bg-[#f8fafc] hover:bg-[#f1f5f9] focus:bg-white border border-slate-200/80 rounded-xl text-[11.5px] sm:text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
           >
             <option value="">Select Thana (Optional)</option>
             {thanas.map((th) => (
