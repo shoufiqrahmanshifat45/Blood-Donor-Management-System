@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar as CalendarIcon, Info } from 'lucide-react';
+import { Calendar as CalendarIcon } from 'lucide-react';
 import { Sidebar } from './components/layout/Sidebar';
 import { Navbar } from './components/layout/Navbar';
 import { StatCards } from './components/dashboard/StatCards';
@@ -36,7 +36,7 @@ export const App: React.FC = () => {
     const queryParts = [bloodGroup, district, thana].filter(Boolean).join(' • ');
     setSearchResultsNotice(
       queryParts
-        ? `Filtered donors matching: ${queryParts} (Found 14 matching donors in preview database)`
+        ? `Filtered donors matching: ${queryParts} (Found 14 matching donors in temporary preview database)`
         : 'Please select a blood group or location to search donors.'
     );
     setTimeout(() => {
@@ -45,8 +45,8 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f7fb] flex flex-row">
-      {/* Sidebar Navigation */}
+    <div className="min-h-screen bg-[#f3f6fa] flex flex-row font-sans text-slate-800 antialiased selection:bg-red-500 selection:text-white">
+      {/* Sidebar Navigation (240px wide on desktop) */}
       <div
         className={`fixed inset-y-0 left-0 z-40 transform lg:relative lg:translate-x-0 transition-transform duration-200 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
@@ -68,7 +68,7 @@ export const App: React.FC = () => {
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 bg-slate-900/40 z-30 lg:hidden"
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-30 lg:hidden"
         />
       )}
 
@@ -80,97 +80,71 @@ export const App: React.FC = () => {
           onSearchChange={setSearchQuery}
         />
 
-        {/* Temporary Preview Notice - Subtle floating chip */}
-        <div className="bg-amber-50/80 border-b border-amber-200/60 px-6 py-1.5 flex items-center justify-between text-xs text-amber-800">
-          <div className="flex items-center gap-2">
-            <Info className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-            <span>
-              <strong>Development Preview Mode:</strong> Rendering interface matching reference screenshot using identified temporary mock data.
-            </span>
-          </div>
-          <span className="hidden md:inline-block font-mono text-[10px] bg-amber-200/60 px-2 py-0.5 rounded text-amber-900">
-            HMR Active • Vite Dev Server
-          </span>
-        </div>
+        {/* Page Container */}
+        <main className="flex-1 px-5 py-3.5 space-y-3 max-w-[1536px] w-full">
+          {/* Desktop 2-Column Grid Layout matching screenshot:
+              - Left Section (~74%): Header -> 4 Stat Cards -> 2 Charts -> Blood Stock & Trend -> Search Blood Group
+              - Right Section (~26%): Recent Blood Requests -> Quick Actions (aligned with Stat Cards)
+          */}
+          <div className="flex flex-col xl:flex-row gap-3.5 items-start">
+            {/* Left Main Section */}
+            <div className="flex-1 min-w-0 space-y-3 w-full">
+              {/* Header Row: Dashboard Title, Subtitle, and Date chip */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 h-[44px]">
+                <div>
+                  <h1 className="text-[23px] font-bold text-[#0f172a] tracking-tight leading-tight">
+                    Dashboard
+                  </h1>
+                  <p className="text-[12px] text-slate-500 mt-0.5">
+                    Welcome back, Shifat! Here's an overview of the blood donor management system.
+                  </p>
+                </div>
 
-        {/* Page Body Container */}
-        <main className="flex-1 p-5 md:p-7 space-y-6 max-w-[1600px] w-full mx-auto">
-          {/* Header Row: Title & Date badge */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Dashboard</h2>
-              <p className="text-xs md:text-sm text-slate-500 mt-0.5">
-                Welcome back, Shifat! Here's an overview of the blood donor management system.
-              </p>
-            </div>
-
-            {/* Date Chip matching screenshot */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl shadow-xs text-xs font-medium text-slate-600 self-start sm:self-auto">
-              <CalendarIcon className="w-4 h-4 text-slate-400" />
-              <span>Tuesday, 7 Oct 2025</span>
-            </div>
-          </div>
-
-          {/* Search notification toast */}
-          {searchResultsNotice && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs font-medium text-red-700 flex items-center justify-between animate-fade-in">
-              <span>{searchResultsNotice}</span>
-              <button
-                onClick={() => setSearchResultsNotice(null)}
-                className="font-bold ml-2 text-red-800 hover:text-red-950"
-              >
-                ✕
-              </button>
-            </div>
-          )}
-
-          {/* Top Metric Cards */}
-          <StatCards stats={INITIAL_STAT_METRICS} />
-
-          {/* Middle Row: Charts & Recent Requests */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            {/* Left 8 columns: 2 charts */}
-            <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="h-full">
-                <DonorsByBloodGroupChart data={DONORS_BY_BLOOD_GROUP} />
+                {/* Date Chip matching screenshot */}
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200/70 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] text-[11px] font-medium text-slate-600 self-start sm:self-auto shrink-0">
+                  <CalendarIcon className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Tuesday, 7 Oct 2025</span>
+                </div>
               </div>
-              <div className="h-full">
+
+              {/* Row 1: 4 Stat Cards */}
+              <StatCards stats={INITIAL_STAT_METRICS} />
+
+              {/* Row 2: Donors by Blood Group & Gender Distribution */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                <DonorsByBloodGroupChart data={DONORS_BY_BLOOD_GROUP} />
                 <GenderDistributionChart data={GENDER_DISTRIBUTION} totalDonors="1,248" />
               </div>
+
+              {/* Row 3: Blood Stock Table & Donor Registration Trend */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+                <div className="lg:col-span-5 h-full">
+                  <BloodStockTable
+                    stock={BLOOD_STOCK_DATA}
+                    onViewAll={() => setCurrentTab('blood-stock')}
+                  />
+                </div>
+                <div className="lg:col-span-7 h-full">
+                  <DonorTrendChart data={DONOR_REGISTRATION_TRENDS} />
+                </div>
+              </div>
+
+              {/* Row 4: Search Blood Group Section */}
+              <BloodGroupSearch onSearch={handleSearchBlood} />
             </div>
 
-            {/* Right 4 columns: Recent Blood Requests */}
-            <div className="lg:col-span-4 h-full">
+            {/* Right Sidebar Widgets Column (~325px, aligned with 4 Stat Cards) */}
+            <div className="w-full xl:w-[325px] shrink-0 space-y-3.5 flex flex-col xl:pt-[48px]">
+              {/* Recent Blood Requests */}
               <RecentBloodRequests
                 requests={RECENT_BLOOD_REQUESTS}
                 onViewAll={() => setCurrentTab('blood-requests')}
               />
-            </div>
-          </div>
 
-          {/* Lower Row: Blood Stock, Registration Trend, and Quick Actions */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            {/* Blood Stock Table (3 cols) */}
-            <div className="lg:col-span-3 h-full">
-              <BloodStockTable
-                stock={BLOOD_STOCK_DATA}
-                onViewAll={() => setCurrentTab('blood-stock')}
-              />
-            </div>
-
-            {/* Donor Trend Line/Area Chart (6 cols) */}
-            <div className="lg:col-span-5 h-full">
-              <DonorTrendChart data={DONOR_REGISTRATION_TRENDS} />
-            </div>
-
-            {/* Quick Actions (4 cols) */}
-            <div className="lg:col-span-4 h-full">
+              {/* Quick Actions */}
               <QuickActions onActionClick={handleQuickAction} />
             </div>
           </div>
-
-          {/* Bottom Row: Blood Group Search Box */}
-          <BloodGroupSearch onSearch={handleSearchBlood} />
         </main>
       </div>
 

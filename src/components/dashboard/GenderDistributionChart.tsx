@@ -12,20 +12,20 @@ export const GenderDistributionChart: React.FC<GenderDistributionChartProps> = (
   totalDonors = '1,248'
 }) => {
   return (
-    <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex flex-col h-full">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="font-bold text-slate-900 text-base">Gender Distribution</h3>
+    <div className="bg-white rounded-2xl p-4.5 p-4 border border-slate-100 shadow-[0_1px_4px_rgba(0,0,0,0.02)] flex flex-col h-full">
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="font-bold text-[#0f172a] text-[14px]">Gender Distribution</h3>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-between flex-1 gap-2">
-        {/* Pie/Donut Chart with Center Text */}
-        <div className="relative w-44 h-48 flex items-center justify-center shrink-0">
+      <div className="flex flex-col sm:flex-row items-center justify-between flex-1 gap-2 min-h-[175px] h-[175px]">
+        {/* Doughnut Chart with Centered Value */}
+        <div className="relative w-40 h-40 flex items-center justify-center shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={data}
-                innerRadius={52}
-                outerRadius={75}
+                innerRadius={44}
+                outerRadius={65}
                 paddingAngle={2}
                 dataKey="percentage"
                 stroke="none"
@@ -39,25 +39,25 @@ export const GenderDistributionChart: React.FC<GenderDistributionChartProps> = (
 
           {/* Centered Total Indicator */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-[10px] uppercase tracking-wider font-medium text-slate-400">Total Donors</span>
-            <span className="text-base font-bold text-slate-900">{totalDonors}</span>
+            <span className="text-[9.5px] uppercase tracking-wider font-semibold text-slate-400">Total Donors</span>
+            <span className="text-[16px] font-bold text-[#0f172a] leading-tight">{totalDonors}</span>
           </div>
         </div>
 
         {/* Legend List */}
-        <div className="flex-1 w-full pl-2 sm:pl-4 space-y-3">
+        <div className="flex-1 w-full pl-2 sm:pl-3 space-y-2.5">
           {data.map((item) => (
-            <div key={item.name} className="flex items-center justify-between text-xs">
+            <div key={item.name} className="flex items-center justify-between text-[11.5px]">
               <div className="flex items-center gap-2">
                 <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  className="w-2 h-2 rounded-full shrink-0 shadow-xs"
                   style={{ backgroundColor: item.color }}
                 />
                 <span className="font-medium text-slate-700">{item.name}</span>
               </div>
               <div className="text-right">
-                <span className="font-bold text-slate-900">{item.percentage}%</span>
-                <span className="text-slate-400 ml-1">({item.count})</span>
+                <span className="font-bold text-[#0f172a]">{item.percentage}%</span>
+                <span className="text-slate-400 ml-1 font-normal">({item.count})</span>
               </div>
             </div>
           ))}
