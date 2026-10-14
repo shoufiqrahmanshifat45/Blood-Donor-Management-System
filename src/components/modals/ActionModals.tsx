@@ -1,12 +1,25 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, Calculator, UserPlus, Droplet, Calendar } from 'lucide-react';
+import { Calculator, UserPlus, Droplet, Calendar, HeartHandshake } from 'lucide-react';
+import { Dialog } from '../common/Dialog';
+import { FormField, TextInput, SelectInput, Button } from '../common/FormInputs';
+import { useNotification } from '../../context/NotificationContext';
+import { api } from '../../services/api';
+import { BloodGroup } from '../../types/api';
 
 interface ActionModalsProps {
   activeModal: string | null;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export const ActionModals: React.FC<ActionModalsProps> = ({ activeModal, onClose }) => {
+export const ActionModals: React.FC<ActionModalsProps> = ({
+  activeModal,
+  onClose,
+  onSuccess,
+}) => {
+  const { success, error } = useNotification();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // BMI Calculator State
   const [bmiWeight, setBmiWeight] = useState<string>('');
   const [bmiHeight, setBmiHeight] = useState<string>('');
@@ -14,17 +27,31 @@ export const ActionModals: React.FC<ActionModalsProps> = ({ activeModal, onClose
 
   // Add Donor State
   const [donorName, setDonorName] = useState('');
-  const [donorBlood, setDonorBlood] = useState('O+');
+  const [donorBlood, setDonorBlood] = useState<BloodGroup>('O+');
   const [donorPhone, setDonorPhone] = useState('');
-  const [donorSuccess, setDonorSuccess] = useState(false);
+  const [donorDistrict, setDonorDistrict] = useState('Dhaka');
+  const [donorAge, setDonorAge] = useState('25');
 
   // Blood Request State
   const [patientName, setPatientName] = useState('');
-  const [requestBlood, setRequestBlood] = useState('A+');
+  const [requestBlood, setRequestBlood] = useState<BloodGroup>('A+');
   const [hospitalName, setHospitalName] = useState('');
-  const [requestSuccess, setRequestSuccess] = useState(false);
+  const [requestPhone, setRequestPhone] = useState('');
+  const [requestUnits, setRequestUnits] = useState('1');
 
-  if (!activeModal) return null;
+  // Appointment State
+  const [appointmentDate, setAppointmentDate] = useState('Tomorrow • 10:00 AM');
+
+  const bloodGroupOptions = [
+    { value: 'A+', label: 'A+' },
+    { value: 'A-', label: 'A-' },
+    { value: 'B+', label: 'B+' },
+    { value: 'B-', label: 'B-' },
+    { value: 'AB+', label: 'AB+' },
+    { value: 'AB-', label: 'AB-' },
+    { value: 'O+', label: 'O+' },
+    { value: 'O-', label: 'O-' },
+  ];
 
   const calculateBmi = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,270 +75,324 @@ export const ActionModals: React.FC<ActionModalsProps> = ({ activeModal, onClose
     }
   };
 
-  const handleAddDonor = (e: React.FormEvent) => {
+  const handleAddDonor = async (e: React.FormEvent) => {
     e.preventDefault();
-    setDonorSuccess(true);
-    setTimeout(() => {
-      setDonorSuccess(false);
+    setIsSubmitting(true);
+    try {
+      await api.createDonor({
+        name: donorName,
+        bloodGroup: donorBlood,
+        gender: 'Male',
+        age: parseInt(donorAge, 10) || 25,
+        phone: donorPhone,
+        district: donorDistrict,
+        thana: 'Central',
+      });
+      success('Donor Registered!', `${donorName} (${donorBlood}) added to active donors.`);
+      if (onSuccess) onSuccess();
       onClose();
-    }, 1500);
+      // Reset form
+      setDonorName('');
+      setDonorPhone('');
+    } catch (err) {
+      error('Registration Failed', (err as Error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleRegisterRequest = (e: React.FormEvent) => {
+  const handleRegisterRequest = async (e: React.FormEvent) => {
     e.preventDefault();
-    setRequestSuccess(true);
-    setTimeout(() => {
-      setRequestSuccess(false);
+    setIsSubmitting(true);
+    try {
+      await api.createBloodRequest({
+        patientName,
+        hospital: hospitalName,
+        bloodGroup: requestBlood,
+        units: parseInt(requestUnits, 10) || 1,
+        urgency: 'Urgent',
+        contactPhone: requestPhone || '+880 1711-000000',
+      });
+      success('Blood Request Broadcasted!', `Request for ${patientName} at ${hospitalName} is live.`);
+      if (onSuccess) onSuccess();
       onClose();
-    }, 1500);
+      // Reset form
+      setPatientName('');
+      setHospitalName('');
+    } catch (err) {
+      error('Request Failed', (err as Error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleBookSlot = async (slot: string) => {
+    setIsSubmitting(true);
+    try {
+      await api.bookAppointment({
+        donorName: 'Current User',
+        donorPhone: '+880 1700-000000',
+        bloodGroup: 'O+',
+        appointmentDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+        appointmentTime: slot,
+        location: 'Dhaka Central Blood Bank',
+      });
+      success('Slot Booked!', `Appointment confirmed for ${slot}.`);
+      if (onSuccess) onSuccess();
+      onClose();
+    } catch (err) {
+      error('Booking Failed', (err as Error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-100">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <>
+      {/* 1. BMI & Eligibility Calculator Dialog */}
+      <Dialog
+        isOpen={activeModal === 'bmi-calculator'}
+        onClose={onClose}
+        title="BMI & Eligibility Calculator"
+        description="Calculate Body Mass Index for blood donation criteria"
+        icon={<Calculator className="w-5 h-5 text-blue-600" />}
+      >
+        <form onSubmit={calculateBmi} className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <FormField label="Weight (kg)" required>
+              <TextInput
+                type="number"
+                step="0.1"
+                required
+                placeholder="e.g. 68"
+                value={bmiWeight}
+                onChange={(e) => setBmiWeight(e.target.value)}
+              />
+            </FormField>
+            <FormField label="Height (cm)" required>
+              <TextInput
+                type="number"
+                step="0.1"
+                required
+                placeholder="e.g. 172"
+                value={bmiHeight}
+                onChange={(e) => setBmiHeight(e.target.value)}
+              />
+            </FormField>
+          </div>
 
-        {/* BMI Calculator Modal */}
-        {activeModal === 'bmi-calculator' && (
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Calculator className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 text-lg">BMI & Eligibility Calculator</h3>
-                <p className="text-xs text-slate-500">Calculate Body Mass Index for blood donation criteria</p>
-              </div>
-            </div>
+          <Button type="submit" variant="primary" className="w-full">
+            Calculate BMI
+          </Button>
 
-            <form onSubmit={calculateBmi} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Weight (kg)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    required
-                    placeholder="e.g. 68"
-                    value={bmiWeight}
-                    onChange={(e) => setBmiWeight(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Height (cm)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    required
-                    placeholder="e.g. 172"
-                    value={bmiHeight}
-                    onChange={(e) => setBmiHeight(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
-                  />
-                </div>
+          {bmiResult && (
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center animate-in fade-in">
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                Calculated Score
+              </span>
+              <div className="text-3xl font-extrabold text-[#0f172a] mt-0.5">
+                {bmiResult.score}
               </div>
-
-              <button
-                type="submit"
-                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl text-sm transition-all"
+              <div className="text-[13px] font-semibold mt-1 text-slate-700">
+                Status: {bmiResult.status}
+              </div>
+              <div
+                className={`text-[11.5px] font-bold mt-2.5 px-3 py-1 rounded-full inline-block ${
+                  bmiResult.eligible
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-rose-100 text-rose-800'
+                }`}
               >
-                Calculate BMI
-              </button>
-
-              {bmiResult && (
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-center">
-                  <span className="text-xs text-slate-500">Calculated Score</span>
-                  <div className="text-3xl font-extrabold text-slate-900 mt-0.5">{bmiResult.score}</div>
-                  <div className="text-sm font-semibold mt-1 text-slate-700">Status: {bmiResult.status}</div>
-                  <div className={`text-xs font-bold mt-2 px-3 py-1 rounded-full inline-block ${
-                    bmiResult.eligible ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-                  }`}>
-                    {bmiResult.eligible ? '✓ Eligible for Blood Donation (Weight ≥ 50kg & Healthy BMI)' : '✗ Consultation required before donation'}
-                  </div>
-                </div>
-              )}
-            </form>
-          </div>
-        )}
-
-        {/* Add Donor Modal */}
-        {activeModal === 'add-donor' && (
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center">
-                <UserPlus className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 text-lg">Add New Blood Donor</h3>
-                <p className="text-xs text-slate-500">Register a willing donor into the system</p>
+                {bmiResult.eligible
+                  ? '✓ Eligible for Blood Donation (Weight ≥ 50kg & Healthy BMI)'
+                  : '✗ Medical consultation required before blood donation'}
               </div>
             </div>
+          )}
+        </form>
+      </Dialog>
 
-            {donorSuccess ? (
-              <div className="py-8 text-center text-emerald-600">
-                <CheckCircle2 className="w-12 h-12 mx-auto mb-2 text-emerald-500" />
-                <h4 className="font-bold text-base text-slate-800">Donor Registered Successfully!</h4>
-                <p className="text-xs text-slate-500 mt-1">Preview record added to current session.</p>
-              </div>
-            ) : (
-              <form onSubmit={handleAddDonor} className="space-y-3.5">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Enter donor's full name"
-                    value={donorName}
-                    onChange={(e) => setDonorName(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Blood Group</label>
-                    <select
-                      value={donorBlood}
-                      onChange={(e) => setDonorBlood(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
-                    >
-                      {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((b) => (
-                        <option key={b} value={b}>{b}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="+880 1712-345678"
-                      value={donorPhone}
-                      onChange={(e) => setDonorPhone(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
-                    />
-                  </div>
-                </div>
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl text-sm shadow-sm transition-all"
-                  >
-                    Save Donor
-                  </button>
-                </div>
-              </form>
-            )}
+      {/* 2. Add New Donor Dialog */}
+      <Dialog
+        isOpen={activeModal === 'add-donor'}
+        onClose={onClose}
+        title="Add New Blood Donor"
+        description="Register a willing donor into the system database"
+        icon={<UserPlus className="w-5 h-5 text-red-600" />}
+      >
+        <form onSubmit={handleAddDonor} className="space-y-3.5">
+          <FormField label="Full Name" required>
+            <TextInput
+              type="text"
+              required
+              placeholder="Enter donor's full name"
+              value={donorName}
+              onChange={(e) => setDonorName(e.target.value)}
+            />
+          </FormField>
+
+          <div className="grid grid-cols-2 gap-3">
+            <FormField label="Blood Group" required>
+              <SelectInput
+                value={donorBlood}
+                onChange={(e) => setDonorBlood(e.target.value as BloodGroup)}
+                options={bloodGroupOptions}
+              />
+            </FormField>
+            <FormField label="Age" required>
+              <TextInput
+                type="number"
+                min="18"
+                max="65"
+                required
+                placeholder="e.g. 25"
+                value={donorAge}
+                onChange={(e) => setDonorAge(e.target.value)}
+              />
+            </FormField>
           </div>
-        )}
 
-        {/* Register Blood Request Modal */}
-        {activeModal === 'register-request' && (
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Droplet className="w-5 h-5 fill-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 text-lg">Register Blood Request</h3>
-                <p className="text-xs text-slate-500">Post an emergency or scheduled requirement</p>
-              </div>
-            </div>
-
-            {requestSuccess ? (
-              <div className="py-8 text-center text-emerald-600">
-                <CheckCircle2 className="w-12 h-12 mx-auto mb-2 text-emerald-500" />
-                <h4 className="font-bold text-base text-slate-800">Blood Request Broadcasted!</h4>
-                <p className="text-xs text-slate-500 mt-1">Notification sent to nearby matching donors.</p>
-              </div>
-            ) : (
-              <form onSubmit={handleRegisterRequest} className="space-y-3.5">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Patient Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Enter patient full name"
-                    value={patientName}
-                    onChange={(e) => setPatientName(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Required Group</label>
-                    <select
-                      value={requestBlood}
-                      onChange={(e) => setRequestBlood(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
-                    >
-                      {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((b) => (
-                        <option key={b} value={b}>{b}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Hospital / Clinic</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Dhaka Medical College"
-                      value={hospitalName}
-                      onChange={(e) => setHospitalName(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
-                    />
-                  </div>
-                </div>
-                <div className="pt-2">
-                  <button
-                    type="submit"
-                    className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white font-medium rounded-xl text-sm shadow-sm transition-all"
-                  >
-                    Submit Blood Request
-                  </button>
-                </div>
-              </form>
-            )}
+          <div className="grid grid-cols-2 gap-3">
+            <FormField label="Phone Number" required>
+              <TextInput
+                type="tel"
+                required
+                placeholder="+880 1712-345678"
+                value={donorPhone}
+                onChange={(e) => setDonorPhone(e.target.value)}
+              />
+            </FormField>
+            <FormField label="District" required>
+              <TextInput
+                type="text"
+                required
+                placeholder="e.g. Dhaka"
+                value={donorDistrict}
+                onChange={(e) => setDonorDistrict(e.target.value)}
+              />
+            </FormField>
           </div>
-        )}
 
-        {/* Book Appointment Modal */}
-        {activeModal === 'book-appointment' && (
-          <div>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <Calendar className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 text-lg">Book Donation Slot</h3>
-                <p className="text-xs text-slate-500">Schedule donor appointment with the blood bank</p>
-              </div>
-            </div>
-            <p className="text-sm text-slate-600 mb-4">
-              Select an available time slot for your next blood donation appointment.
-            </p>
-            <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-700 mb-4">
-              <button onClick={() => onClose()} className="p-3 border border-emerald-300 rounded-xl bg-emerald-50 text-emerald-800 text-center hover:bg-emerald-100">
-                Tomorrow • 10:00 AM
-              </button>
-              <button onClick={() => onClose()} className="p-3 border border-slate-200 rounded-xl hover:border-emerald-300 text-center">
-                Tomorrow • 02:30 PM
-              </button>
-              <button onClick={() => onClose()} className="p-3 border border-slate-200 rounded-xl hover:border-emerald-300 text-center">
-                Thursday • 11:00 AM
-              </button>
-              <button onClick={() => onClose()} className="p-3 border border-slate-200 rounded-xl hover:border-emerald-300 text-center">
-                Friday • 04:00 PM
-              </button>
-            </div>
+          <div className="pt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              isLoading={isSubmitting}
+              className="w-full py-2.5"
+            >
+              Save Donor Record
+            </Button>
           </div>
-        )}
-      </div>
-    </div>
+        </form>
+      </Dialog>
+
+      {/* 3. Register Blood Request Dialog */}
+      <Dialog
+        isOpen={activeModal === 'register-request'}
+        onClose={onClose}
+        title="Register Blood Request"
+        description="Post an emergency or scheduled requirement for patients"
+        icon={<Droplet className="w-5 h-5 text-blue-600 fill-blue-600" />}
+      >
+        <form onSubmit={handleRegisterRequest} className="space-y-3.5">
+          <FormField label="Patient Name" required>
+            <TextInput
+              type="text"
+              required
+              placeholder="Enter patient full name"
+              value={patientName}
+              onChange={(e) => setPatientName(e.target.value)}
+            />
+          </FormField>
+
+          <div className="grid grid-cols-2 gap-3">
+            <FormField label="Required Group" required>
+              <SelectInput
+                value={requestBlood}
+                onChange={(e) => setRequestBlood(e.target.value as BloodGroup)}
+                options={bloodGroupOptions}
+              />
+            </FormField>
+            <FormField label="Units Needed" required>
+              <TextInput
+                type="number"
+                min="1"
+                max="10"
+                required
+                value={requestUnits}
+                onChange={(e) => setRequestUnits(e.target.value)}
+              />
+            </FormField>
+          </div>
+
+          <FormField label="Hospital / Medical Facility" required>
+            <TextInput
+              type="text"
+              required
+              placeholder="e.g. Dhaka Medical College Hospital"
+              value={hospitalName}
+              onChange={(e) => setHospitalName(e.target.value)}
+            />
+          </FormField>
+
+          <FormField label="Emergency Contact Phone" required>
+            <TextInput
+              type="tel"
+              required
+              placeholder="+880 1711-234567"
+              value={requestPhone}
+              onChange={(e) => setRequestPhone(e.target.value)}
+            />
+          </FormField>
+
+          <div className="pt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              isLoading={isSubmitting}
+              className="w-full py-2.5"
+            >
+              Broadcast Blood Request
+            </Button>
+          </div>
+        </form>
+      </Dialog>
+
+      {/* 4. Book Donation Appointment Dialog */}
+      <Dialog
+        isOpen={activeModal === 'book-appointment'}
+        onClose={onClose}
+        title="Book Donation Slot"
+        description="Schedule a convenient donor appointment with the blood bank"
+        icon={<Calendar className="w-5 h-5 text-emerald-600" />}
+      >
+        <p className="text-[13px] text-slate-600 mb-3">
+          Select an available time slot for your next blood donation visit:
+        </p>
+
+        <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-slate-700 mb-2">
+          {[
+            'Tomorrow • 10:00 AM',
+            'Tomorrow • 02:30 PM',
+            'Thursday • 11:00 AM',
+            'Friday • 04:00 PM',
+          ].map((slot) => (
+            <button
+              key={slot}
+              type="button"
+              onClick={() => handleBookSlot(slot)}
+              disabled={isSubmitting}
+              className={`p-3 border rounded-xl text-center transition-all ${
+                appointmentDate === slot
+                  ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                  : 'border-slate-200 hover:border-emerald-300 hover:bg-slate-50'
+              }`}
+            >
+              {slot}
+            </button>
+          ))}
+        </div>
+      </Dialog>
+    </>
   );
 };

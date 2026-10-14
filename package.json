@@ -6,7 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dev:client": "vite",
+    "dev:server": "npm --prefix server run dev",
+    "build:client": "tsc && vite build",
+    "build:server": "npm --prefix server run build",
+    "prisma:generate": "npm --prefix server run prisma:generate",
+    "prisma:migrate": "npm --prefix server run prisma:migrate",
+    "prisma:seed": "npm --prefix server run prisma:seed",
+    "prisma:studio": "npm --prefix server run prisma:studio"
   },
   "dependencies": {
     "clsx": "^2.1.1",

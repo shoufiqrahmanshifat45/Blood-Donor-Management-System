@@ -7,9 +7,10 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  LabelList
+  LabelList,
 } from 'recharts';
 import { BloodGroupCount } from '../../types/dashboard';
+import { ChartCard } from '../common/ChartCard';
 
 interface DonorsByBloodGroupChartProps {
   data: BloodGroupCount[];
@@ -17,11 +18,7 @@ interface DonorsByBloodGroupChartProps {
 
 export const DonorsByBloodGroupChart: React.FC<DonorsByBloodGroupChartProps> = ({ data }) => {
   return (
-    <div className="bg-white rounded-2xl p-4.5 p-4 border border-slate-100 shadow-[0_1px_4px_rgba(0,0,0,0.02)] flex flex-col h-full">
-      <div className="flex items-center justify-between mb-1">
-        <h3 className="font-bold text-[#0f172a] text-[14px]">Donors by Blood Group</h3>
-      </div>
-
+    <ChartCard title="Donors by Blood Group" className="h-full">
       <div className="w-full flex-1 min-h-[175px] h-[175px] mt-1">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
@@ -50,7 +47,7 @@ export const DonorsByBloodGroupChart: React.FC<DonorsByBloodGroupChartProps> = (
                 borderRadius: '8px',
                 color: '#fff',
                 fontSize: '11px',
-                padding: '4px 8px'
+                padding: '4px 8px',
               }}
               formatter={(value: any) => [`${value} Donors`, 'Count']}
             />
@@ -72,6 +69,6 @@ export const DonorsByBloodGroupChart: React.FC<DonorsByBloodGroupChartProps> = (
           </BarChart>
         </ResponsiveContainer>
       </div>
-    </div>
+    </ChartCard>
   );
 };

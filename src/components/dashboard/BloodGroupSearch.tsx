@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { Droplet, MapPin, Landmark, Search } from 'lucide-react';
 import { BANGLADESH_DISTRICTS, BANGLADESH_THANAS } from '../../data/mockData';
 import { SearchBloodGroupHeaderLogo } from '../common/DashboardIcons';
+import { FilterSelect } from '../common/FilterSelect';
+import { Button } from '../common/FormInputs';
 
 interface BloodGroupSearchProps {
   onSearch?: (bloodGroup: string, district: string, thana: string) => void;
+  isLoading?: boolean;
 }
 
-export const BloodGroupSearch: React.FC<BloodGroupSearchProps> = ({ onSearch }) => {
+export const BloodGroupSearch: React.FC<BloodGroupSearchProps> = ({ onSearch, isLoading = false }) => {
   const [bloodGroup, setBloodGroup] = useState('');
   const [district, setDistrict] = useState('');
   const [thana, setThana] = useState('');
@@ -36,78 +39,47 @@ export const BloodGroupSearch: React.FC<BloodGroupSearchProps> = ({ onSearch }) 
       {/* Form Controls */}
       <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 items-center">
         {/* Select Blood Group */}
-        <div className="relative">
-          <Droplet className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none fill-slate-300 stroke-none" />
-          <select
-            value={bloodGroup}
-            onChange={(e) => setBloodGroup(e.target.value)}
-            className="w-full pl-9 pr-8 py-2.5 bg-[#f8fafc] hover:bg-[#f1f5f9] focus:bg-white border border-slate-200/80 rounded-xl text-xs md:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 appearance-none cursor-pointer transition-colors"
-          >
-            <option value="">Select Blood Group</option>
-            {bloodGroups.map((bg) => (
-              <option key={bg} value={bg}>
-                {bg}
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]">
-            ▼
-          </div>
-        </div>
+        <FilterSelect
+          value={bloodGroup}
+          onChange={setBloodGroup}
+          options={bloodGroups.map((bg) => ({ value: bg, label: bg }))}
+          placeholder="Select Blood Group"
+          icon={<Droplet className="w-4 h-4 text-slate-400 fill-slate-300 stroke-none" />}
+        />
 
         {/* Select District */}
-        <div className="relative">
-          <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <select
-            value={district}
-            onChange={(e) => {
-              setDistrict(e.target.value);
-              setThana('');
-            }}
-            className="w-full pl-9 pr-8 py-2.5 bg-[#f8fafc] hover:bg-[#f1f5f9] focus:bg-white border border-slate-200/80 rounded-xl text-xs md:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 appearance-none cursor-pointer transition-colors"
-          >
-            <option value="">Select District</option>
-            {BANGLADESH_DISTRICTS.map((dist) => (
-              <option key={dist} value={dist}>
-                {dist}
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]">
-            ▼
-          </div>
-        </div>
+        <FilterSelect
+          value={district}
+          onChange={(val) => {
+            setDistrict(val);
+            setThana('');
+          }}
+          options={BANGLADESH_DISTRICTS.map((dist) => ({ value: dist, label: dist }))}
+          placeholder="Select District"
+          icon={<MapPin className="w-4 h-4 text-slate-400" />}
+        />
 
         {/* Select Thana (Optional) */}
-        <div className="relative">
-          <Landmark className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <select
-            value={thana}
-            onChange={(e) => setThana(e.target.value)}
-            disabled={!district || thanas.length === 0}
-            className="w-full pl-8 pr-6 py-2.5 bg-[#f8fafc] hover:bg-[#f1f5f9] focus:bg-white border border-slate-200/80 rounded-xl text-[11.5px] sm:text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-          >
-            <option value="">Select Thana (Optional)</option>
-            {thanas.map((th) => (
-              <option key={th} value={th}>
-                {th}
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]">
-            ▼
-          </div>
-        </div>
+        <FilterSelect
+          value={thana}
+          onChange={setThana}
+          options={thanas.map((th) => ({ value: th, label: th }))}
+          placeholder="Select Thana (Optional)"
+          disabled={!district || thanas.length === 0}
+          icon={<Landmark className="w-4 h-4 text-slate-400" />}
+        />
 
         {/* Search Button */}
         <div>
-          <button
+          <Button
             type="submit"
-            className="w-full py-2.5 px-6 bg-[#ef4444] hover:bg-[#dc2626] text-white font-medium rounded-xl text-xs md:text-sm flex items-center justify-center gap-2 shadow-sm shadow-red-500/20 active:scale-[0.99] transition-all"
+            variant="primary"
+            isLoading={isLoading}
+            leftIcon={<Search className="w-4 h-4 stroke-[2.2]" />}
+            className="w-full py-2.5 text-xs md:text-sm"
           >
-            <Search className="w-4 h-4 stroke-[2.2]" />
-            <span>Search</span>
-          </button>
+            Search
+          </Button>
         </div>
       </form>
     </div>

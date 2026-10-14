@@ -1,0 +1,119 @@
+// Prisma Schema for Blood Donor Management System
+// Target Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      String   @default("Admin")
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admin_users")
+}
+
+model Donor {
+  id               String          @id @default(uuid())
+  name             String
+  bloodGroup       String          // A+, A-, B+, B-, AB+, AB-, O+, O-
+  gender           String          // Male, Female, Other
+  age              Int
+  phone            String
+  email            String?
+  district         String
+  thana            String
+  lastDonationDate DateTime?
+  totalDonations   Int             @default(0)
+  status           String          @default("Eligible") // Eligible, Ineligible, Pending
+  donations        BloodDonation[]
+  appointments     Appointment[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([bloodGroup])
+  @@index([district, thana])
+  @@map("donors")
+}
+
+model BloodDonation {
+  id           String   @id @default(uuid())
+  donorId      String
+  donor        Donor    @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  bloodGroup   String
+  units        Int      @default(1)
+  donationDate DateTime @default(now())
+  location     String
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  @@index([donorId])
+  @@map("blood_donations")
+}
+
+model BloodStock {
+  id             String   @id @default(uuid())
+  bloodGroup     String   @unique // A+, A-, B+, B-, AB+, AB-, O+, O-
+  availableUnits Int      @default(0)
+  reservedUnits  Int      @default(0)
+  status         String   @default("Good") // Good, Low, Critical
+  updatedAt      DateTime @updatedAt
+
+  @@map("blood_stocks")
+}
+
+model BloodRequest {
+  id           String   @id @default(uuid())
+  patientName  String
+  hospital     String
+  bloodGroup   String
+  units        Int      @default(1)
+  urgency      String   @default("Urgent") // Urgent, Pending, Fulfilled, Cancelled
+  contactPhone String
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([urgency])
+  @@index([bloodGroup])
+  @@map("blood_requests")
+}
+
+model Appointment {
+  id              String   @id @default(uuid())
+  donorId         String?
+  donor           Donor?   @relation(fields: [donorId], references: [id], onDelete: SetNull)
+  donorName       String
+  donorPhone      String
+  bloodGroup      String
+  appointmentDate DateTime
+  appointmentTime String
+  location        String
+  status          String   @default("Scheduled") // Scheduled, Completed, Cancelled
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([donorId])
+  @@map("appointments")
+}
+
+model SystemMetric {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  change    String
+  trend     String   // up, down, neutral
+  updatedAt DateTime @updatedAt
+
+  @@map("system_metrics")
+}

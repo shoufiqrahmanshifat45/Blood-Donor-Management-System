@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, RefreshCw } from 'lucide-react';
 import { Sidebar } from './components/layout/Sidebar';
 import { Navbar } from './components/layout/Navbar';
 import { StatCards } from './components/dashboard/StatCards';
@@ -11,6 +11,16 @@ import { DonorTrendChart } from './components/dashboard/DonorTrendChart';
 import { QuickActions } from './components/dashboard/QuickActions';
 import { BloodGroupSearch } from './components/dashboard/BloodGroupSearch';
 import { ActionModals } from './components/modals/ActionModals';
+import { NotificationProvider, useNotification } from './context/NotificationContext';
+import { useDashboardData } from './hooks/useDashboardData';
+import {
+  StatCardSkeleton,
+  ChartSkeleton,
+  TableSkeleton,
+  ListSkeleton,
+} from './components/common/LoadingSkeleton';
+import { ErrorBanner } from './components/common/ErrorState';
+import { api } from './services/api';
 
 import {
   INITIAL_STAT_METRICS,
@@ -21,28 +31,91 @@ import {
   DONOR_REGISTRATION_TRENDS,
 } from './data/mockData';
 
-export const App: React.FC = () => {
+const DashboardContent: React.FC = () => {
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeModal, setActiveModal] = useState<string | null>(null);
-  const [searchResultsNotice, setSearchResultsNotice] = useState<string | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+
+  const { data, loading, error, refresh } = useDashboardData();
+  const { info, success } = useNotification();
 
   const handleQuickAction = (actionId: string) => {
     setActiveModal(actionId);
   };
 
-  const handleSearchBlood = (bloodGroup: string, district: string, thana: string) => {
-    const queryParts = [bloodGroup, district, thana].filter(Boolean).join(' • ');
-    setSearchResultsNotice(
-      queryParts
-        ? `Filtered donors matching: ${queryParts} (Found 14 matching donors in temporary preview database)`
-        : 'Please select a blood group or location to search donors.'
-    );
-    setTimeout(() => {
-      setSearchResultsNotice(null);
-    }, 5000);
+  const handleSearchBlood = async (bloodGroup: string, district: string, thana: string) => {
+    setIsSearching(true);
+    try {
+      const result = await api.searchDonors({ bloodGroup, district, thana });
+      const queryParts = [bloodGroup, district, thana].filter(Boolean).join(' • ');
+      if (result.donors.length > 0) {
+        success(
+          'Donors Located',
+          `Found ${result.donors.length} matching donors for ${queryParts || 'all areas'}.`
+        );
+      } else {
+        info(
+          'Search Completed',
+          queryParts
+            ? `No exact matches for ${queryParts}. Broadcast request recommended.`
+            : 'Please specify criteria to filter donors.'
+        );
+      }
+    } finally {
+      setIsSearching(false);
+    }
   };
+
+  // Safe fallback metrics if API returns null during cold starts
+  const statMetrics = data?.stats
+    ? data.stats.map((s, idx) => ({
+        id: s.id,
+        label: s.title,
+        value: String(s.value),
+        trend: s.change,
+        trendType: (s.isPositive ? 'up' : 'down') as 'up' | 'down',
+        trendContext: s.comparisonText,
+        icon: (['users', 'droplet', 'file-text', 'shield-check'][idx] || 'users') as any,
+        iconBg: '',
+      }))
+    : INITIAL_STAT_METRICS;
+
+  const bloodGroupChartData = data?.donorsByBloodGroup
+    ? data.donorsByBloodGroup.map((d) => ({ bloodGroup: d.group, count: d.count }))
+    : DONORS_BY_BLOOD_GROUP;
+
+  const genderData = data?.genderDistribution
+    ? data.genderDistribution.map((g) => ({
+        name: g.gender,
+        percentage: g.percentage,
+        count: g.count,
+        color: g.color,
+      }))
+    : GENDER_DISTRIBUTION;
+
+  const stockData = data?.bloodStock
+    ? data.bloodStock.map((s) => ({
+        bloodGroup: s.bloodGroup,
+        units: s.availableUnits,
+        status: (s.status === 'Critical' ? 'Low' : s.status) as 'Good' | 'Low',
+      }))
+    : BLOOD_STOCK_DATA;
+
+  const trendData = data?.donorRegistrationTrends || DONOR_REGISTRATION_TRENDS;
+
+  const recentRequestsData = data?.recentBloodRequests
+    ? data.recentBloodRequests.map((r) => ({
+        id: r.id,
+        donorName: r.patientName,
+        bloodGroup: r.bloodGroup,
+        bloodGroupColor: (['A+', 'B+', 'O+', 'AB+'].includes(r.bloodGroup) ? 'red' : 'blue') as 'red' | 'blue',
+        hospital: r.hospital,
+        timeAgo: r.timeAgo,
+        status: (r.urgency === 'Cancelled' ? 'Pending' : r.urgency) as 'Urgent' | 'Pending' | 'Fulfilled',
+      }))
+    : RECENT_BLOOD_REQUESTS;
 
   return (
     <div className="min-h-screen bg-[#f3f6fa] flex flex-row font-sans text-slate-800 antialiased selection:bg-red-500 selection:text-white">
@@ -82,9 +155,17 @@ export const App: React.FC = () => {
 
         {/* Page Container */}
         <main className="flex-1 px-5 py-3.5 space-y-3 max-w-[1536px] w-full">
-          {/* Desktop 2-Column Grid Layout matching screenshot:
+          {/* Optional error banner if API had an error but fallback succeeded */}
+          {error && (
+            <ErrorBanner
+              message={`Backend service offline (${error}). Displaying local cached data.`}
+              onRetry={refresh}
+            />
+          )}
+
+          {/* Desktop 2-Column Grid Layout matching reference:
               - Left Section (~74%): Header -> 4 Stat Cards -> 2 Charts -> Blood Stock & Trend -> Search Blood Group
-              - Right Section (~26%): Recent Blood Requests -> Quick Actions (aligned with Stat Cards)
+              - Right Section (~26%): Recent Blood Requests -> Quick Actions
           */}
           <div className="flex flex-col xl:flex-row gap-3.5 items-start">
             {/* Left Main Section */}
@@ -100,46 +181,95 @@ export const App: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Date Chip matching screenshot */}
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200/70 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] text-[11px] font-medium text-slate-600 self-start sm:self-auto shrink-0">
-                  <CalendarIcon className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Tuesday, 7 Oct 2025</span>
+                <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                  {/* Refresh Button */}
+                  <button
+                    onClick={refresh}
+                    className="p-1.5 bg-white border border-slate-200/70 hover:border-slate-300 rounded-xl text-slate-500 hover:text-slate-800 transition-colors shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
+                    title="Refresh data"
+                    aria-label="Refresh data"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                  </button>
+
+                  {/* Date Chip matching screenshot */}
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200/70 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.02)] text-[11px] font-medium text-slate-600">
+                    <CalendarIcon className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Tuesday, 7 Oct 2025</span>
+                  </div>
                 </div>
               </div>
 
               {/* Row 1: 4 Stat Cards */}
-              <StatCards stats={INITIAL_STAT_METRICS} />
+              {loading && !data ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                  <StatCardSkeleton />
+                  <StatCardSkeleton />
+                  <StatCardSkeleton />
+                  <StatCardSkeleton />
+                </div>
+              ) : (
+                <StatCards stats={statMetrics} />
+              )}
 
               {/* Row 2: Donors by Blood Group & Gender Distribution */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                <DonorsByBloodGroupChart data={DONORS_BY_BLOOD_GROUP} />
-                <GenderDistributionChart data={GENDER_DISTRIBUTION} totalDonors="1,248" />
+                {loading && !data ? (
+                  <>
+                    <ChartSkeleton />
+                    <ChartSkeleton />
+                  </>
+                ) : (
+                  <>
+                    <DonorsByBloodGroupChart data={bloodGroupChartData} />
+                    <GenderDistributionChart
+                      data={genderData}
+                      totalDonors={data?.totalDonorsCount || '1,248'}
+                    />
+                  </>
+                )}
               </div>
 
               {/* Row 3: Blood Stock Table & Donor Registration Trend */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
                 <div className="lg:col-span-5 h-full">
-                  <BloodStockTable
-                    stock={BLOOD_STOCK_DATA}
-                    onViewAll={() => setCurrentTab('blood-stock')}
-                  />
+                  {loading && !data ? (
+                    <div className="bg-white rounded-2xl p-5 border border-slate-100">
+                      <TableSkeleton rows={8} />
+                    </div>
+                  ) : (
+                    <BloodStockTable
+                      stock={stockData}
+                      onViewAll={() => setCurrentTab('blood-stock')}
+                    />
+                  )}
                 </div>
                 <div className="lg:col-span-7 h-full">
-                  <DonorTrendChart data={DONOR_REGISTRATION_TRENDS} />
+                  {loading && !data ? (
+                    <ChartSkeleton />
+                  ) : (
+                    <DonorTrendChart data={trendData} />
+                  )}
                 </div>
               </div>
 
               {/* Row 4: Search Blood Group Section */}
-              <BloodGroupSearch onSearch={handleSearchBlood} />
+              <BloodGroupSearch onSearch={handleSearchBlood} isLoading={isSearching} />
             </div>
 
             {/* Right Sidebar Widgets Column (~325px, aligned with 4 Stat Cards) */}
             <div className="w-full xl:w-[325px] shrink-0 space-y-3.5 flex flex-col xl:pt-[48px]">
               {/* Recent Blood Requests */}
-              <RecentBloodRequests
-                requests={RECENT_BLOOD_REQUESTS}
-                onViewAll={() => setCurrentTab('blood-requests')}
-              />
+              {loading && !data ? (
+                <div className="bg-white rounded-2xl p-5 border border-slate-100">
+                  <ListSkeleton count={5} />
+                </div>
+              ) : (
+                <RecentBloodRequests
+                  requests={recentRequestsData}
+                  onViewAll={() => setCurrentTab('blood-requests')}
+                />
+              )}
 
               {/* Quick Actions */}
               <QuickActions onActionClick={handleQuickAction} />
@@ -149,8 +279,20 @@ export const App: React.FC = () => {
       </div>
 
       {/* Interactive Action Modals */}
-      <ActionModals activeModal={activeModal} onClose={() => setActiveModal(null)} />
+      <ActionModals
+        activeModal={activeModal}
+        onClose={() => setActiveModal(null)}
+        onSuccess={refresh}
+      />
     </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <NotificationProvider>
+      <DashboardContent />
+    </NotificationProvider>
   );
 };
 
