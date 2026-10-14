@@ -130,21 +130,18 @@ export const ToolsNavIcon: React.FC<{ className?: string }> = ({ className = "w-
   </svg>
 );
 
-// 9. Total Donors Stat Card Icon (Red squircle with solid white donor silhouette & medical accent)
+// 9. Total Donors Stat Card Icon (Red squircle with solid white donor silhouette & megaphone)
 export const TotalDonorsStatIcon: React.FC<{ className?: string }> = ({ className = "w-7 h-7" }) => (
   <svg viewBox="0 0 28 28" fill="none" className={className}>
-    <circle cx="11.5" cy="7.5" r="4.2" fill="white" />
-    <path
-      d="M4 22 C4 17.2 7.5 14.5 11.5 14.5 C14.5 14.5 16.8 15.6 18.2 17.5 C17.8 18.5 17.5 19.6 17.5 20.8 C17.5 21.2 17.6 21.6 17.7 22 H4 Z"
-      fill="white"
-    />
-    {/* Syringe / medical donor badge accent on right shoulder */}
-    <path
-      d="M18 13.5 L22.5 9 M20.5 8 L23.5 11 M16.5 15 L18 13.5"
-      stroke="white"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
+    {/* Head */}
+    <circle cx="12.5" cy="7.8" r="3.8" fill="white" />
+    {/* Torso */}
+    <path d="M5 21.2 C5 16.5 8.2 13.5 12.5 13.5 C16.8 13.5 20 16.5 20 21.2 H5 Z" fill="white" />
+    {/* Center chest dot cutout */}
+    <circle cx="12.5" cy="17.8" r="1.35" fill="#ef4444" />
+    {/* Megaphone on right */}
+    <path d="M16 11.5 L21 9 V14.5 L16 12 Z" fill="white" />
+    <path d="M21 9 C22 9 22.8 10.2 22.8 11.75 C22.8 13.3 22 14.5 21 14.5" fill="white" stroke="white" strokeWidth="0.8" />
   </svg>
 );
 
@@ -207,12 +204,13 @@ export const GiveBloodSaveLivesWidget: React.FC = () => (
       <div className="relative mb-1 flex items-center justify-center w-[100px] h-[72px]">
         {/* White ECG trace coming out from behind the right side of the drop */}
         <svg
-          className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-8 text-slate-200 stroke-current fill-none pointer-events-none opacity-90"
-          viewBox="0 0 44 28"
+          className="absolute right-0 top-1/2 -translate-y-1/2 w-11 h-8 text-slate-200 stroke-current fill-none pointer-events-none opacity-90"
+          viewBox="0 0 44 32"
         >
           <path
-            d="M0 14 L8 14 L12 2 L17 26 L22 8 L27 18 L32 14 L44 14"
-            strokeWidth="2.2"
+            d="M0 16 L5 16 L8 20 L12 4 L16 28 L20 12 L23 18 L26 16 L38 16"
+            stroke="#f1f5f9"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -233,36 +231,36 @@ export const GiveBloodSaveLivesWidget: React.FC = () => (
               d="M18 2 C18 2 4 18 4 29 C4 38 10.3 44 18 44 C25.7 44 32 38 32 29 C32 18 18 2 18 2 Z"
               fill="url(#giveBloodDropGrad)"
             />
-            {/* Curved specular shine on left */}
+            {/* Soft curved specular shine along upper-left shoulder */}
             <path
-              d="M8.5 22 C7.5 26 9.5 32 12.5 35"
+              d="M9 20 C8.2 24 9.5 29 11.5 32"
               stroke="white"
-              strokeWidth="2.4"
+              strokeWidth="2.2"
               strokeLinecap="round"
-              opacity="0.85"
+              opacity="0.8"
             />
             {/* Bold White Medical Cross in Center */}
             <path
               d="M18 19 V33 M11 26 H25"
               stroke="white"
-              strokeWidth="4"
+              strokeWidth="4.2"
               strokeLinecap="round"
             />
           </svg>
         </div>
       </div>
 
-      {/* Script typography matching screenshot */}
+      {/* Script typography matching screenshot in Satisfy font */}
       <div className="font-script leading-tight select-none mb-1">
         <div
-          className="text-white text-[23px] font-bold tracking-wide drop-shadow-sm"
-          style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', cursive" }}
+          className="text-white text-[21px] font-normal tracking-wide drop-shadow-sm"
+          style={{ fontFamily: "'Satisfy', cursive" }}
         >
           Give Blood
         </div>
         <div
-          className="text-white text-[21px] font-bold tracking-wide drop-shadow-sm -mt-1"
-          style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', cursive" }}
+          className="text-white text-[20px] font-normal tracking-wide drop-shadow-sm -mt-0.5"
+          style={{ fontFamily: "'Satisfy', cursive" }}
         >
           Save Lives
         </div>
@@ -272,8 +270,8 @@ export const GiveBloodSaveLivesWidget: React.FC = () => (
       <div className="w-full mt-0.5 flex items-center justify-center">
         <svg className="w-full h-7 text-red-500 stroke-current fill-none" viewBox="0 0 200 32">
           <path
-            d="M0 16 L20 16 L24 22 L30 4 L36 30 L42 12 L46 18 L50 16 L70 16 C85 14 100 18 115 16 C130 14 145 18 160 16 L200 16"
-            strokeWidth="2"
+            d="M10 16 L25 16 L28 20 L33 4 L38 32 L43 12 L47 18 L51 16 L65 16 C85 14, 105 18, 125 16 C145 14, 165 18, 185 16 L200 16"
+            strokeWidth="2.2"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
@@ -298,12 +296,22 @@ export const SearchBloodGroupHeaderLogo: React.FC<{ className?: string }> = ({ c
 // 15. Add New Donor Action Icon (Quick Actions - Solid Red Person with Solid Red Plus)
 export const AddNewDonorActionIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
   <svg viewBox="0 0 24 24" fill="none" className={className}>
-    <circle cx="10" cy="7" r="4.2" fill="#ef4444" />
+    {/* Head */}
+    <circle cx="10.5" cy="6.8" r="4.2" fill="#ef4444" />
+    {/* Neck */}
+    <rect x="9.2" y="10.5" width="2.6" height="2" fill="#ef4444" />
+    {/* Torso */}
     <path
-      d="M3 20 C3 15.8 6.5 13.5 10 13.5 C12.8 13.5 15.2 14.8 16.3 17 C15.8 17.8 15.5 18.8 15.5 20 H3 Z"
+      d="M3.5 21 C3.5 16.5 6.6 13.2 10.5 13.2 C14.4 13.2 17.5 16.5 17.5 21 H3.5 Z"
       fill="#ef4444"
     />
-    <path d="M19 8 V14 M16 11 H22" stroke="#ef4444" strokeWidth="2.8" strokeLinecap="round" />
+    {/* Plus sign beside head/neck */}
+    <path
+      d="M19 7.8 V13.2 M16.3 10.5 H21.7"
+      stroke="#ef4444"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+    />
   </svg>
 );
 
