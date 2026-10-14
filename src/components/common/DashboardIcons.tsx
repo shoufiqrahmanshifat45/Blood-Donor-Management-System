@@ -1,4 +1,5 @@
 import React from 'react';
+import giveBloodSaveLivesImg from '../../assets/give-blood-save-lives.png';
 
 /**
  * Pixel-perfect SVG Icons matching the reference dashboard mockup.
@@ -198,86 +199,12 @@ export const AvailableUnitsStatIcon: React.FC<{ className?: string }> = ({ class
 
 // 13. Give Blood Save Lives Section Component (Bottom of Sidebar)
 export const GiveBloodSaveLivesWidget: React.FC = () => (
-  <div className="px-3 py-4 mt-auto border-t border-[#16223d] relative overflow-hidden bg-gradient-to-b from-transparent to-[#080e1c] select-none">
-    <div className="flex flex-col items-center justify-center text-center">
-      {/* Glossy Red Droplet with Center Medical Cross + White ECG Wave behind it */}
-      <div className="relative mb-1 flex items-center justify-center w-[100px] h-[75px]">
-        {/* White ECG trace coming out from behind the right side of the drop */}
-        <svg
-          className="absolute right-0 top-1/2 -translate-y-1/2 w-11 h-8 text-slate-200 stroke-current fill-none pointer-events-none opacity-90"
-          viewBox="0 0 44 34"
-        >
-          <path
-            d="M0 17 L5 17 L8 21 L12 3 L16 31 L20 11 L23 19 L26 17 L40 17"
-            stroke="#e2e8f0"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-
-        {/* Glossy Red Droplet */}
-        <div className="relative z-10 w-11 h-14 flex items-center justify-center filter drop-shadow-[0_2px_10px_rgba(239,68,68,0.45)]">
-          <svg viewBox="0 0 36 46" className="w-full h-full" fill="none">
-            <defs>
-              <linearGradient id="giveBloodDropGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#f87171" />
-                <stop offset="35%" stopColor="#ef4444" />
-                <stop offset="100%" stopColor="#b91c1c" />
-              </linearGradient>
-            </defs>
-            {/* Main Drop */}
-            <path
-              d="M18 2 C18 2 4 18 4 29 C4 38 10.3 44 18 44 C25.7 44 32 38 32 29 C32 18 18 2 18 2 Z"
-              fill="url(#giveBloodDropGrad)"
-            />
-            {/* White crescent shine along bottom-left curve */}
-            <path
-              d="M7.8 24 C6.8 28 8.8 34.5 12.8 38 C14.5 39.5 16 40.5 18 41 C15.5 40 13.5 38 11.5 35 C9.5 31.5 8.5 27 8.8 24 Z"
-              fill="white"
-              opacity="0.85"
-            />
-            {/* Bold White Medical Cross in Center */}
-            <path
-              d="M18 18 V34 M10 26 H26"
-              stroke="white"
-              strokeWidth="4.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-      </div>
-
-      {/* Script typography matching screenshot: Give Blood / Save lives (lowercase l) */}
-      <div className="font-script leading-tight select-none mb-1">
-        <div
-          className="text-white text-[22px] font-normal tracking-wide drop-shadow-sm"
-          style={{ fontFamily: "'Satisfy', cursive" }}
-        >
-          Give Blood
-        </div>
-        <div
-          className="text-white text-[21px] font-normal tracking-wide drop-shadow-sm -mt-0.5"
-          style={{ fontFamily: "'Satisfy', cursive" }}
-        >
-          Save lives
-        </div>
-      </div>
-
-      {/* Red ECG Waveform Line extending across the bottom */}
-      <div className="w-full mt-0.5 flex items-center justify-center">
-        <svg className="w-full h-8 text-red-500 stroke-current fill-none" viewBox="0 0 200 36">
-          <path
-            d="M5 18 L24 18 L27 22 L32 4 L37 34 L42 12 L46 20 L50 18 L65 18 C85 16, 105 20, 125 18 C145 16, 165 20, 185 18 L200 18"
-            stroke="#ef4444"
-            strokeWidth="2.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
-    </div>
+  <div className="px-3.5 py-4 mt-auto border-t border-[#16223d] relative overflow-hidden bg-[#0c1527] select-none flex flex-col items-center justify-center">
+    <img
+      src={giveBloodSaveLivesImg}
+      alt="Give Blood Save lives"
+      className="w-full max-w-[204px] h-auto object-contain pointer-events-none drop-shadow-sm"
+    />
   </div>
 );
 
