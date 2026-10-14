@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vitejs.dev/config/
+// Tailwind darkMode: 'class' enabled
 export default defineConfig({
   plugins: [react()],
   server: {

@@ -10,6 +10,78 @@
   }
 }
 
+/* Dark Mode: Deep Midnight Contrast */
+html.dark body {
+  background-color: #070d19 !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark .bg-white {
+  background-color: #0c1527 !important;
+  border-color: #1e293b !important;
+}
+
+html.dark header.bg-white {
+  background-color: #0c1527 !important;
+  border-color: #1e293b !important;
+}
+
+html.dark .text-\[\#0f172a\] {
+  color: #ffffff !important;
+}
+
+html.dark .text-slate-800 {
+  color: #f1f5f9 !important;
+}
+
+html.dark .text-slate-700 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-slate-600 {
+  color: #94a3b8 !important;
+}
+
+html.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+html.dark .bg-slate-50 {
+  background-color: #111c34 !important;
+}
+
+html.dark .bg-slate-100 {
+  background-color: #1e293b !important;
+}
+
+html.dark .bg-\[\#f1f5f9\]\/80 {
+  background-color: #131d33 !important;
+}
+
+html.dark .border-slate-100 {
+  border-color: #1e293b !important;
+}
+
+html.dark .border-slate-100\/90 {
+  border-color: #1e293b !important;
+}
+
+html.dark .border-slate-200 {
+  border-color: #334155 !important;
+}
+
+html.dark .border-slate-200\/60 {
+  border-color: rgba(51, 65, 85, 0.6) !important;
+}
+
+html.dark .border-slate-200\/70 {
+  border-color: rgba(51, 65, 85, 0.7) !important;
+}
+
+html.dark .border-slate-200\/90 {
+  border-color: rgba(51, 65, 85, 0.9) !important;
+}
+
 /* Custom Mode: Crimson Midnight Luxury Accents */
 html.theme-custom {
   --accent-glow: rgba(239, 68, 68, 0.15);
@@ -33,6 +105,7 @@ html.theme-custom[data-accent="amethyst"] {
 
 html.theme-custom body {
   background-color: #060913 !important;
+  color: #f1f5f9 !important;
 }
 
 html.theme-custom .bg-white {
