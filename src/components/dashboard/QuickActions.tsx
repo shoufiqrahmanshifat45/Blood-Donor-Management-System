@@ -67,7 +67,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onActionClick }) => 
               }`}
             >
               <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-1.5 transition-transform group-hover:scale-105">
-                <Icon className="w-6 h-6" />
+                <Icon className={act.id === 'add-donor' ? "w-[26px] h-[26px]" : "w-6 h-6"} />
               </div>
               <span
                 className={`text-[11px] font-semibold transition-colors leading-tight ${

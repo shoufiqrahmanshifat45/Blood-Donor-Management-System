@@ -201,15 +201,15 @@ export const GiveBloodSaveLivesWidget: React.FC = () => (
   <div className="px-3 py-4 mt-auto border-t border-[#16223d] relative overflow-hidden bg-gradient-to-b from-transparent to-[#080e1c] select-none">
     <div className="flex flex-col items-center justify-center text-center">
       {/* Glossy Red Droplet with Center Medical Cross + White ECG Wave behind it */}
-      <div className="relative mb-1 flex items-center justify-center w-[100px] h-[72px]">
+      <div className="relative mb-1 flex items-center justify-center w-[100px] h-[75px]">
         {/* White ECG trace coming out from behind the right side of the drop */}
         <svg
           className="absolute right-0 top-1/2 -translate-y-1/2 w-11 h-8 text-slate-200 stroke-current fill-none pointer-events-none opacity-90"
-          viewBox="0 0 44 32"
+          viewBox="0 0 44 34"
         >
           <path
-            d="M0 16 L5 16 L8 20 L12 4 L16 28 L20 12 L23 18 L26 16 L38 16"
-            stroke="#f1f5f9"
+            d="M0 17 L5 17 L8 21 L12 3 L16 31 L20 11 L23 19 L26 17 L40 17"
+            stroke="#e2e8f0"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -231,46 +231,46 @@ export const GiveBloodSaveLivesWidget: React.FC = () => (
               d="M18 2 C18 2 4 18 4 29 C4 38 10.3 44 18 44 C25.7 44 32 38 32 29 C32 18 18 2 18 2 Z"
               fill="url(#giveBloodDropGrad)"
             />
-            {/* Soft curved specular shine along upper-left shoulder */}
+            {/* White crescent shine along bottom-left curve */}
             <path
-              d="M9 20 C8.2 24 9.5 29 11.5 32"
-              stroke="white"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              opacity="0.8"
+              d="M7.8 24 C6.8 28 8.8 34.5 12.8 38 C14.5 39.5 16 40.5 18 41 C15.5 40 13.5 38 11.5 35 C9.5 31.5 8.5 27 8.8 24 Z"
+              fill="white"
+              opacity="0.85"
             />
             {/* Bold White Medical Cross in Center */}
             <path
-              d="M18 19 V33 M11 26 H25"
+              d="M18 18 V34 M10 26 H26"
               stroke="white"
-              strokeWidth="4.2"
+              strokeWidth="4.5"
               strokeLinecap="round"
+              strokeLinejoin="round"
             />
           </svg>
         </div>
       </div>
 
-      {/* Script typography matching screenshot in Satisfy font */}
+      {/* Script typography matching screenshot: Give Blood / Save lives (lowercase l) */}
       <div className="font-script leading-tight select-none mb-1">
         <div
-          className="text-white text-[21px] font-normal tracking-wide drop-shadow-sm"
+          className="text-white text-[22px] font-normal tracking-wide drop-shadow-sm"
           style={{ fontFamily: "'Satisfy', cursive" }}
         >
           Give Blood
         </div>
         <div
-          className="text-white text-[20px] font-normal tracking-wide drop-shadow-sm -mt-0.5"
+          className="text-white text-[21px] font-normal tracking-wide drop-shadow-sm -mt-0.5"
           style={{ fontFamily: "'Satisfy', cursive" }}
         >
-          Save Lives
+          Save lives
         </div>
       </div>
 
       {/* Red ECG Waveform Line extending across the bottom */}
       <div className="w-full mt-0.5 flex items-center justify-center">
-        <svg className="w-full h-7 text-red-500 stroke-current fill-none" viewBox="0 0 200 32">
+        <svg className="w-full h-8 text-red-500 stroke-current fill-none" viewBox="0 0 200 36">
           <path
-            d="M10 16 L25 16 L28 20 L33 4 L38 32 L43 12 L47 18 L51 16 L65 16 C85 14, 105 18, 125 16 C145 14, 165 18, 185 16 L200 16"
+            d="M5 18 L24 18 L27 22 L32 4 L37 34 L42 12 L46 20 L50 18 L65 18 C85 16, 105 20, 125 18 C145 16, 165 20, 185 18 L200 18"
+            stroke="#ef4444"
             strokeWidth="2.2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -293,23 +293,23 @@ export const SearchBloodGroupHeaderLogo: React.FC<{ className?: string }> = ({ c
   </svg>
 );
 
-// 15. Add New Donor Action Icon (Quick Actions - Solid Red Person with Solid Red Plus)
-export const AddNewDonorActionIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
-  <svg viewBox="0 0 24 24" fill="none" className={className}>
-    {/* Head */}
-    <circle cx="10.5" cy="6.8" r="4.2" fill="#ef4444" />
-    {/* Neck */}
-    <rect x="9.2" y="10.5" width="2.6" height="2" fill="#ef4444" />
-    {/* Torso */}
+// 15. Add New Donor Action Icon (Quick Actions - Thicker, Bolder Solid Red Person with Solid Red Plus)
+export const AddNewDonorActionIcon: React.FC<{ className?: string }> = ({ className = "w-7 h-7" }) => (
+  <svg viewBox="0 0 28 28" fill="none" className={className}>
+    {/* Thick solid head circle */}
+    <circle cx="12" cy="7.2" r="5" fill="#ef4444" />
+    {/* Short thick neck */}
+    <rect x="10.2" y="11.5" width="3.6" height="2.2" rx="0.5" fill="#ef4444" />
+    {/* Broad, thick rounded shoulders / torso */}
     <path
-      d="M3.5 21 C3.5 16.5 6.6 13.2 10.5 13.2 C14.4 13.2 17.5 16.5 17.5 21 H3.5 Z"
+      d="M3 23 C3 17.5 7 13.5 12 13.5 C17 13.5 21 17.5 21 23 Z"
       fill="#ef4444"
     />
-    {/* Plus sign beside head/neck */}
+    {/* Thick, bold red plus sign beside head */}
     <path
-      d="M19 7.8 V13.2 M16.3 10.5 H21.7"
+      d="M22.5 8 V14.5 M19.2 11.25 H25.8"
       stroke="#ef4444"
-      strokeWidth="2.6"
+      strokeWidth="3"
       strokeLinecap="round"
     />
   </svg>
