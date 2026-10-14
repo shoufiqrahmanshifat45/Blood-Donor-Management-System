@@ -1,0 +1,116 @@
+import React, { useState } from 'react';
+import { Droplet, MapPin, Landmark, Search } from 'lucide-react';
+import { BANGLADESH_DISTRICTS, BANGLADESH_THANAS } from '../../data/mockData';
+
+interface BloodGroupSearchProps {
+  onSearch?: (bloodGroup: string, district: string, thana: string) => void;
+}
+
+export const BloodGroupSearch: React.FC<BloodGroupSearchProps> = ({ onSearch }) => {
+  const [bloodGroup, setBloodGroup] = useState('');
+  const [district, setDistrict] = useState('');
+  const [thana, setThana] = useState('');
+
+  const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+  const thanas = district && BANGLADESH_THANAS[district] ? BANGLADESH_THANAS[district] : [];
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (onSearch) {
+      onSearch(bloodGroup, district, thana);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-5">
+        <div className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center shrink-0">
+          <Droplet className="w-5 h-5 fill-red-500" />
+        </div>
+        <div>
+          <h3 className="font-bold text-slate-900 text-base leading-tight">Search Blood Group</h3>
+          <p className="text-xs text-slate-500 mt-0.5">Find donors by blood group and location</p>
+        </div>
+      </div>
+
+      {/* Form Controls */}
+      <form onSubmit={handleSearch} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+        {/* Select Blood Group */}
+        <div className="relative">
+          <Droplet className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none fill-slate-300" />
+          <select
+            value={bloodGroup}
+            onChange={(e) => setBloodGroup(e.target.value)}
+            className="w-full pl-10 pr-8 py-2.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 rounded-xl text-xs md:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 appearance-none cursor-pointer transition-colors"
+          >
+            <option value="">Select Blood Group</option>
+            {bloodGroups.map((bg) => (
+              <option key={bg} value={bg}>
+                {bg}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
+            ▼
+          </div>
+        </div>
+
+        {/* Select District */}
+        <div className="relative">
+          <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <select
+            value={district}
+            onChange={(e) => {
+              setDistrict(e.target.value);
+              setThana('');
+            }}
+            className="w-full pl-10 pr-8 py-2.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 rounded-xl text-xs md:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 appearance-none cursor-pointer transition-colors"
+          >
+            <option value="">Select District</option>
+            {BANGLADESH_DISTRICTS.map((dist) => (
+              <option key={dist} value={dist}>
+                {dist}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
+            ▼
+          </div>
+        </div>
+
+        {/* Select Thana (Optional) */}
+        <div className="relative">
+          <Landmark className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <select
+            value={thana}
+            onChange={(e) => setThana(e.target.value)}
+            disabled={!district || thanas.length === 0}
+            className="w-full pl-10 pr-8 py-2.5 bg-slate-50 hover:bg-slate-100/70 focus:bg-white border border-slate-200 rounded-xl text-xs md:text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+          >
+            <option value="">Select Thana (Optional)</option>
+            {thanas.map((th) => (
+              <option key={th} value={th}>
+                {th}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
+            ▼
+          </div>
+        </div>
+
+        {/* Search Button */}
+        <div>
+          <button
+            type="submit"
+            className="w-full py-2.5 px-6 bg-[#ef4444] hover:bg-[#dc2626] text-white font-medium rounded-xl text-xs md:text-sm flex items-center justify-center gap-2 shadow-sm shadow-red-500/25 active:scale-[0.99] transition-all"
+          >
+            <Search className="w-4 h-4" />
+            <span>Search</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
