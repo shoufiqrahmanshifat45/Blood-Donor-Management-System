@@ -52,13 +52,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, searchQuery, onSea
           <div className="w-10 h-10 rounded-full ring-2 ring-slate-200 overflow-hidden bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-xs">
             <img
               src={adminPhoto}
-              alt="Shoufiq Rahman Shifat"
+              alt="Shifat Rahman"
               className="w-full h-full object-cover object-top"
             />
           </div>
           <div className="hidden sm:block text-left">
             <p className="text-[13px] font-bold text-[#0f172a] leading-tight">
-              Shoufiq Rahman Shifat
+              Shifat Rahman
             </p>
             <p className="text-[11px] text-slate-400 font-medium leading-none mt-0.5">Admin</p>
           </div>

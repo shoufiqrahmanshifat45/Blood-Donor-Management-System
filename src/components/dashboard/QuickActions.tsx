@@ -1,12 +1,12 @@
 import React from 'react';
 import {
-  UserPlus,
-  Droplet,
-  Calendar,
-  LineChart,
-  Search,
-  Calculator
-} from 'lucide-react';
+  AddNewDonorActionIcon,
+  RegisterBloodRequestActionIcon,
+  BookAppointmentActionIcon,
+  ViewReportsActionIcon,
+  SearchBloodGroupActionIcon,
+  BmiCalculatorActionIcon,
+} from '../common/DashboardIcons';
 
 interface QuickActionsProps {
   onActionClick: (actionId: string) => void;
@@ -17,39 +17,32 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onActionClick }) => 
     {
       id: 'add-donor',
       title: 'Add New Donor',
-      icon: UserPlus,
-      iconColor: 'text-[#ef4444]',
+      icon: AddNewDonorActionIcon,
     },
     {
       id: 'register-request',
       title: 'Register Blood Request',
-      icon: Droplet,
-      iconColor: 'text-[#2563eb]',
-      iconFill: true,
+      icon: RegisterBloodRequestActionIcon,
     },
     {
       id: 'book-appointment',
       title: 'Book Appointment',
-      icon: Calendar,
-      iconColor: 'text-[#10b981]',
+      icon: BookAppointmentActionIcon,
     },
     {
       id: 'view-reports',
       title: 'View Reports',
-      icon: LineChart,
-      iconColor: 'text-[#a855f7]',
+      icon: ViewReportsActionIcon,
     },
     {
       id: 'search-blood-group',
       title: 'Search Blood Group',
-      icon: Search,
-      iconColor: 'text-[#2563eb]',
+      icon: SearchBloodGroupActionIcon,
     },
     {
       id: 'bmi-calculator',
       title: 'Open BMI Calculator',
-      icon: Calculator,
-      iconColor: 'text-[#64748b]',
+      icon: BmiCalculatorActionIcon,
     },
   ];
 
@@ -74,9 +67,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ onActionClick }) => 
               }`}
             >
               <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-1.5 transition-transform group-hover:scale-105">
-                <Icon
-                  className={`w-5 h-5 ${act.iconColor} ${act.iconFill ? 'fill-current' : ''} stroke-[2.2]`}
-                />
+                <Icon className="w-6 h-6" />
               </div>
               <span
                 className={`text-[11px] font-semibold transition-colors leading-tight ${

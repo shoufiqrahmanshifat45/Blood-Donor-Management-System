@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Droplet, MapPin, Landmark, Search } from 'lucide-react';
 import { BANGLADESH_DISTRICTS, BANGLADESH_THANAS } from '../../data/mockData';
+import { SearchBloodGroupHeaderLogo } from '../common/DashboardIcons';
 
 interface BloodGroupSearchProps {
   onSearch?: (bloodGroup: string, district: string, thana: string) => void;
@@ -23,11 +24,9 @@ export const BloodGroupSearch: React.FC<BloodGroupSearchProps> = ({ onSearch }) 
 
   return (
     <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_1px_6px_rgba(0,0,0,0.02)]">
-      {/* Header */}
+      {/* Header matching reference mockup */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 rounded-xl bg-[#ef4444] text-white flex items-center justify-center shrink-0 shadow-xs">
-          <Droplet className="w-5 h-5 fill-white stroke-none" />
-        </div>
+        <SearchBloodGroupHeaderLogo className="w-7 h-8 shrink-0" />
         <div>
           <h3 className="font-bold text-[#0f172a] text-[15px] leading-tight">Search Blood Group</h3>
           <p className="text-[11px] text-slate-500 mt-0.5">Find donors by blood group and location</p>

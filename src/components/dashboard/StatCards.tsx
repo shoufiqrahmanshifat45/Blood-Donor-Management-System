@@ -1,6 +1,12 @@
 import React from 'react';
-import { User, Droplet, FileText, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown } from 'lucide-react';
 import { StatMetric } from '../../types/dashboard';
+import {
+  TotalDonorsStatIcon,
+  TotalDonationsStatIcon,
+  BloodRequestsStatIcon,
+  AvailableUnitsStatIcon,
+} from '../common/DashboardIcons';
 
 interface StatCardsProps {
   stats: StatMetric[];
@@ -15,22 +21,22 @@ export const StatCards: React.FC<StatCardsProps> = ({ stats }) => {
             key={stat.id}
             className="bg-white rounded-2xl p-4.5 p-4 border border-slate-100 shadow-[0_1px_6px_rgba(0,0,0,0.02)] flex items-center gap-4 hover:shadow-sm transition-shadow"
           >
-            {/* Left Icon Badge */}
+            {/* Left Icon Badge matching screenshot */}
             <div
-              className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ${
                 stat.id === 'total-donors'
-                  ? 'bg-[#ef4444] text-white'
+                  ? 'bg-[#ef4444]'
                   : stat.id === 'total-donations'
-                  ? 'bg-[#ef4444] text-white'
+                  ? 'bg-[#ff2d55]'
                   : stat.id === 'blood-requests'
-                  ? 'bg-[#2563eb] text-white'
-                  : 'bg-[#10b981] text-white'
+                  ? 'bg-[#2563eb]'
+                  : 'bg-[#10b981]'
               }`}
             >
-              {stat.id === 'total-donors' && <User className="w-6 h-6 stroke-[2.2]" />}
-              {stat.id === 'total-donations' && <Droplet className="w-6 h-6 fill-white stroke-none" />}
-              {stat.id === 'blood-requests' && <FileText className="w-6 h-6 stroke-[2.2]" />}
-              {stat.id === 'available-units' && <Droplet className="w-6 h-6 fill-white stroke-none" />}
+              {stat.id === 'total-donors' && <TotalDonorsStatIcon className="w-7 h-7" />}
+              {stat.id === 'total-donations' && <TotalDonationsStatIcon className="w-7 h-7" />}
+              {stat.id === 'blood-requests' && <BloodRequestsStatIcon className="w-7 h-7" />}
+              {stat.id === 'available-units' && <AvailableUnitsStatIcon className="w-7 h-7" />}
             </div>
 
             {/* Content */}

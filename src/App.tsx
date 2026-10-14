@@ -96,7 +96,7 @@ export const App: React.FC = () => {
                     Dashboard
                   </h1>
                   <p className="text-[12px] text-slate-500 mt-0.5">
-                    Welcome back, Shoufiq Rahman Shifat! Here's an overview of the blood donor management system.
+                    Welcome back, Shifat! Here's an overview of the blood donor management system.
                   </p>
                 </div>
 
