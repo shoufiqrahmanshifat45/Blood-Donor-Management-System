@@ -53,7 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, searchQuery, onSea
             <img
               src={adminPhoto}
               alt="Shifat Rahman"
-              className="w-full h-full object-cover object-top"
+              className="w-full h-full object-cover object-center"
             />
           </div>
           <div className="hidden sm:block text-left">
