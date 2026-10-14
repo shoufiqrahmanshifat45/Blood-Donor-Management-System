@@ -76,7 +76,7 @@ export const BloodGroupSearch: React.FC<BloodGroupSearchProps> = ({ onSearch, is
             variant="primary"
             isLoading={isLoading}
             leftIcon={<Search className="w-4 h-4 stroke-[2.2]" />}
-            className="w-full py-2.5 text-xs md:text-sm"
+            className="custom-accent-btn w-full py-2.5 text-xs md:text-sm"
           >
             Search
           </Button>

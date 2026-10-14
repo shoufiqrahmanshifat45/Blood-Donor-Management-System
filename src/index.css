@@ -84,23 +84,33 @@ html.dark .border-slate-200\/90 {
 
 /* Custom Mode: Crimson Midnight Luxury Accents */
 html.theme-custom {
-  --accent-glow: rgba(239, 68, 68, 0.15);
+  --accent-color: #ef4444;
+  --accent-glow: rgba(239, 68, 68, 0.25);
+  --accent-light: rgba(239, 68, 68, 0.12);
 }
 
 html.theme-custom[data-accent="crimson"] {
-  --accent-glow: rgba(239, 68, 68, 0.2);
+  --accent-color: #ef4444;
+  --accent-glow: rgba(239, 68, 68, 0.25);
+  --accent-light: rgba(239, 68, 68, 0.12);
 }
 
 html.theme-custom[data-accent="sapphire"] {
-  --accent-glow: rgba(37, 99, 235, 0.2);
+  --accent-color: #2563eb;
+  --accent-glow: rgba(37, 99, 235, 0.25);
+  --accent-light: rgba(37, 99, 235, 0.12);
 }
 
 html.theme-custom[data-accent="emerald"] {
-  --accent-glow: rgba(16, 185, 129, 0.2);
+  --accent-color: #10b981;
+  --accent-glow: rgba(16, 185, 129, 0.25);
+  --accent-light: rgba(16, 185, 129, 0.12);
 }
 
 html.theme-custom[data-accent="amethyst"] {
-  --accent-glow: rgba(139, 92, 246, 0.2);
+  --accent-color: #8b5cf6;
+  --accent-glow: rgba(139, 92, 246, 0.25);
+  --accent-light: rgba(139, 92, 246, 0.12);
 }
 
 html.theme-custom body {
@@ -112,6 +122,81 @@ html.theme-custom .bg-white {
   background-color: #0a0f1d !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
   box-shadow: 0 4px 20px -2px var(--accent-glow) !important;
+}
+
+/* Sidebar ("Task Bar") in Custom Mode */
+html.theme-custom aside {
+  background-color: #080d19 !important;
+  border-right-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.theme-custom .sidebar-active-tab {
+  background-color: var(--accent-color) !important;
+  box-shadow: 0 4px 14px -1px var(--accent-glow) !important;
+}
+
+/* Notification Bar / Top Navbar in Custom Mode */
+html.theme-custom header.notification-bar,
+html.theme-custom header {
+  background-color: #080d19 !important;
+  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 4px 20px -2px var(--accent-glow) !important;
+}
+
+html.theme-custom .notification-bell-btn {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f1f5f9 !important;
+}
+
+html.theme-custom .notification-bell-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: var(--accent-color) !important;
+  border-color: var(--accent-color) !important;
+}
+
+html.theme-custom .notification-badge {
+  background-color: var(--accent-color) !important;
+  box-shadow: 0 0 10px var(--accent-color) !important;
+  border-color: #080d19 !important;
+  color: #ffffff !important;
+}
+
+html.theme-custom .notification-panel {
+  background-color: #0a0f1d !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 10px 30px -5px var(--accent-glow) !important;
+}
+
+/* Search Bar in Custom Mode */
+html.theme-custom .search-bar-container input,
+html.theme-custom .search-bar-input {
+  background-color: #0e1628 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 12px -2px var(--accent-glow) !important;
+}
+
+html.theme-custom .search-bar-container input:focus,
+html.theme-custom .search-bar-input:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 2px var(--accent-glow) !important;
+}
+
+html.theme-custom .search-bar-icon {
+  color: var(--accent-color) !important;
+}
+
+/* Custom Accent Buttons & Avatar */
+html.theme-custom .custom-accent-btn,
+html.theme-custom button[type="submit"] {
+  background-color: var(--accent-color) !important;
+  box-shadow: 0 4px 14px -1px var(--accent-glow) !important;
+}
+
+html.theme-custom .user-avatar-ring {
+  ring-color: var(--accent-color) !important;
+  box-shadow: 0 0 12px var(--accent-glow) !important;
 }
 
 /* Custom scrollbar for sleek dashboard UI */
