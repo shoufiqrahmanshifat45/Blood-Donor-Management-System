@@ -202,7 +202,7 @@ export const AvailableUnitsStatIcon: React.FC<{ className?: string }> = ({ class
 
 // 13. Give Blood Save Lives Section Component (Bottom of Sidebar - Multi-Theme Vector & PNG Hybrid)
 export const GiveBloodSaveLivesWidget: React.FC<{ className?: string; imgClassName?: string }> = ({
-  className = "give-blood-save-lives-widget px-3 py-2.5 mt-auto border-t border-slate-100 dark:border-slate-800/80 relative overflow-hidden select-none flex flex-col items-center justify-center transition-colors",
+  className = "give-blood-save-lives-widget px-3 py-2.5 mt-auto border-none relative overflow-hidden select-none flex flex-col items-center justify-center transition-colors",
 }) => {
   const { mode, resolvedTheme, customAccent } = useTheme();
 

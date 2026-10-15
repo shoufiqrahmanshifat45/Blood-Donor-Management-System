@@ -152,8 +152,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
         </div>
       </nav>
 
-      {/* Decorative Blood Donation Graphic at the bottom */}
-      <GiveBloodSaveLivesWidget className="give-blood-widget px-3 py-3 mt-auto border-t border-slate-100 dark:border-slate-800/80 bg-transparent relative overflow-hidden select-none flex flex-col items-center justify-center transition-colors" />
+      {/* Decorative Blood Donation Graphic at the bottom (no straight line above) */}
+      <GiveBloodSaveLivesWidget className="give-blood-widget px-3 py-3 mt-auto border-none bg-transparent relative overflow-hidden select-none flex flex-col items-center justify-center transition-colors" />
     </aside>
   );
 };

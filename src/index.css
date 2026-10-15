@@ -152,8 +152,10 @@ html.theme-custom .tools-active-item {
   font-weight: 600 !important;
 }
 
-html.theme-custom .give-blood-widget {
-  border-top-color: var(--accent-light) !important;
+.give-blood-widget,
+.give-blood-save-lives-widget {
+  border: none !important;
+  border-top: none !important;
 }
 
 /* Notification Bar / Top Navbar in Custom Mode */
