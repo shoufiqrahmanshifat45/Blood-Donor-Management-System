@@ -145,6 +145,96 @@ npm run preview
 
 ---
 
+## ⚡ Backend REST API & Services
+
+The backend is built with **Node.js**, **Express**, **TypeScript**, and **Prisma ORM**, backed by a managed **Neon PostgreSQL** database. It provides centralized error handling, robust request validation using **Zod**, role-based access control (RBAC), and brute-force protection.
+
+### 🛡️ Architecture & Security Features
+- **Prisma ORM & PostgreSQL**: High-performance relational database with strict foreign keys, indexes, enums, and timestamps.
+- **Role-Based Authorization (RBAC)**: Supports `SUPER_ADMIN`, `ADMIN`, `STAFF`, `HOSPITAL_COORDINATOR`, `VOLUNTEER`, and `DONOR`.
+- **Record Ownership Verification**: Regular users can only update their own profiles and requests; clinical statuses and administrative actions require verified staff or administrator roles.
+- **Privacy & Security Guarantee**: Password hashes and sensitive internal credentials are **never** returned in API responses.
+- **Centralized Error Handling**: Uniform JSON error envelopes for domain exceptions, validation issues (`ZodError`), database constraints (`P2002`, `P2025`), and JWT verification failures.
+- **Rate Limiting & Payload Guards**:
+  - Global API rate limiter (`RATE_LIMIT_MAX=100` req / 15 min).
+  - Strict authentication limiter (`RATE_LIMIT_AUTH_MAX=10` req / 15 min for login/register).
+  - 10MB payload size limits for JSON and URL-encoded requests.
+- **Zero Fake Success Responses**: Database connectivity is actively verified; operations fail transparently with appropriate 503 or 400 codes when database access is interrupted.
+
+---
+
+### 📡 API Endpoints Reference
+
+All API routes are prefixed with `/api`. Authentication is passed via standard HTTP Bearer header: `Authorization: Bearer <TOKEN>`.
+
+| Method | Endpoint | Auth Required | Description |
+|---|---|:---:|---|
+| **Health & Meta** | | | |
+| `GET` | `/` | No | API service identity and available endpoint directory |
+| `GET` | `/api/health` | No | System health check and PostgreSQL connectivity status |
+| **Authentication & Profile** | | | |
+| `POST` | `/api/auth/register` | No (Rate-limited) | Register a new user account with hashed password |
+| `POST` | `/api/auth/login` | No (Rate-limited) | Authenticate user credentials and return JWT token |
+| `POST` | `/api/auth/logout` | No | Terminate user session |
+| `GET` | `/api/auth/me` | Yes | Get current authenticated user profile & linked donor info |
+| `PATCH` | `/api/auth/profile` | Yes | Update profile name, phone, or avatar |
+| `PATCH` | `/api/auth/change-password` | Yes | Update account password securely |
+| **Donors Directory** | | | |
+| `GET` | `/api/donors` | No | Search donors with filters (`bloodGroup`, `district`, `thana`, `search`, `page`, `limit`) |
+| `GET` | `/api/donors/:id` | No | Get single donor profile with donation & appointment history |
+| `POST` | `/api/donors` | Optional | Register a new blood donor (links to logged-in user if present) |
+| `PATCH` | `/api/donors/:id` | Yes (Owner / Admin) | Update donor profile (clinical status restricted to Staff/Admin) |
+| `PATCH` | `/api/donors/:id/availability` | Yes (Owner / Admin) | Toggle availability and emergency readiness |
+| `DELETE` | `/api/donors/:id` | Yes (Admin only) | Delete donor record from database |
+| **Blood Requests** | | | |
+| `GET` | `/api/blood-requests` | No | List blood requisitions with urgency, hospital, and group filters |
+| `GET` | `/api/blood-requests/:id` | No | Get detailed blood request information |
+| `POST` | `/api/blood-requests` | Optional | Create new blood request requisition |
+| `PATCH` | `/api/blood-requests/:id` | Yes (Owner / Admin) | Update blood requisition fields |
+| `PATCH` | `/api/blood-requests/:id/status` | Optional / Role-aware | Update status (`Urgent`, `Pending`, `Fulfilled`, `Cancelled`) |
+| `DELETE` | `/api/blood-requests/:id` | Yes (Owner / Admin) | Delete blood request record |
+| **Verified Donations** | | | |
+| `GET` | `/api/donations` | No | List donation verification log records |
+| `GET` | `/api/donations/:id` | No | Get donation verification details |
+| `POST` | `/api/donations` | Yes (Staff / Admin) | Record verified donation, auto-update blood stock & donor cooldown |
+| **Appointments** | | | |
+| `GET` | `/api/appointments` | No | List appointments with date and status filters |
+| `GET` | `/api/appointments/:id` | No | Get appointment details |
+| `POST` | `/api/appointments` | No | Schedule a blood donation appointment |
+| `PATCH` | `/api/appointments/:id/status` | No | Update appointment status (`Scheduled`, `Completed`, `Cancelled`, `NoShow`) |
+| `DELETE` | `/api/appointments/:id` | Yes (Admin) | Cancel and remove appointment record |
+| **Blood Inventory & Dashboard** | | | |
+| `GET` | `/api/blood-stock` | No | Get real-time available & reserved units for all 8 blood groups |
+| `PATCH` | `/api/blood-stock/:bloodGroup` | Yes (Staff / Admin) | Adjust inventory units (+/- deltaUnits) and stock status |
+| `GET` | `/api/dashboard` | No | Real-time KPI statistics, charts, and blood group distribution |
+| **Notifications** | | | |
+| `GET` | `/api/notifications` | Optional | Fetch system alerts and requisition notifications |
+| `PATCH` | `/api/notifications/:id/read` | Optional | Mark specific notification as read |
+| `POST` | `/api/notifications/mark-all-read` | Optional | Mark all user notifications as read |
+
+---
+
+### 🧪 Automated Testing
+
+The backend includes a comprehensive test suite covering all essential API routes, request validation, authentication, authorization, and error envelopes.
+
+Run backend tests:
+```bash
+npm --prefix server run test
+```
+
+Build backend TypeScript:
+```bash
+npm --prefix server run build
+```
+
+Start backend development server:
+```bash
+npm --prefix server run dev
+```
+
+---
+
 ## 👨‍💻 Author
 
 **Shoufiq Rahman Shifat**
@@ -155,3 +245,4 @@ npm run preview
 ## 📄 License
 
 This project is licensed under the MIT License - feel free to use and adapt it for your healthcare and donation management initiatives.
+

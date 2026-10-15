@@ -3,45 +3,80 @@ import { DonorsService } from '../services/donors.service.js';
 
 const donorsService = new DonorsService();
 
-export async function searchDonors(req: Request, res: Response, next: NextFunction) {
-  try {
-    const { bloodGroup, district, thana, search, page, limit } = req.query;
-    const result = await donorsService.searchDonors({
-      bloodGroup: bloodGroup as string,
-      district: district as string,
-      thana: thana as string,
-      search: search as string,
-      page: page ? parseInt(page as string, 10) : 1,
-      limit: limit ? parseInt(limit as string, 10) : 20,
-    });
-
-    res.status(200).json({
-      success: true,
-      data: result.donors,
-      meta: {
-        total: result.total,
-        page: page ? parseInt(page as string, 10) : 1,
-        limit: limit ? parseInt(limit as string, 10) : 20,
-        timestamp: new Date().toISOString(),
-      },
-    });
-  } catch (error) {
-    next(error);
+export class DonorsController {
+  async searchDonors(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await donorsService.searchDonors(req.query as any);
+      res.status(200).json({
+        success: true,
+        data: result.donors,
+        meta: result.pagination,
+      });
+    } catch (error) {
+      next(error);
+    }
   }
-}
 
-export async function createDonor(req: Request, res: Response, next: NextFunction) {
-  try {
-    const donor = await donorsService.createDonor(req.body);
-    res.status(201).json({
-      success: true,
-      data: donor,
-      message: 'Donor registered successfully!',
-      meta: {
-        timestamp: new Date().toISOString(),
-      },
-    });
-  } catch (error) {
-    next(error);
+  async getDonorById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const donor = await donorsService.getDonorById(req.params.id);
+      res.status(200).json({
+        success: true,
+        data: donor,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async createDonor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const created = await donorsService.createDonor(req.body, req.user);
+      res.status(201).json({
+        success: true,
+        data: created,
+        message: 'Donor profile registered successfully.',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateDonor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const updated = await donorsService.updateDonor(req.params.id, req.body, req.user!);
+      res.status(200).json({
+        success: true,
+        data: updated,
+        message: 'Donor profile updated successfully.',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateAvailability(req: Request, res: Response, next: NextFunction) {
+    try {
+      const updated = await donorsService.updateAvailability(req.params.id, req.body, req.user!);
+      res.status(200).json({
+        success: true,
+        data: updated,
+        message: 'Availability updated successfully.',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteDonor(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await donorsService.deleteDonor(req.params.id);
+      res.status(200).json({
+        success: true,
+        message: result.message,
+      });
+    } catch (error) {
+      next(error);
+    }
   }
 }

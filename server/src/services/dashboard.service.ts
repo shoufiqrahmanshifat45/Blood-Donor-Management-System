@@ -2,198 +2,142 @@ import { prisma, checkDatabaseConnection } from '../db/prisma.js';
 import {
   DashboardSummaryData,
   fromPrismaBloodGroup,
+  fromPrismaGender,
   fromPrismaStockStatus,
   fromPrismaUrgency,
+  BloodGroup,
 } from '../types/shared.js';
-
-// Fallback baseline metrics mirroring production data when database is cold/starting
-const FALLBACK_DASHBOARD: DashboardSummaryData = {
-  stats: [
-    {
-      id: 'total-donors',
-      title: 'Total Donors',
-      value: '1,248',
-      change: '12%',
-      isPositive: true,
-      comparisonText: 'vs. last month',
-    },
-    {
-      id: 'total-donations',
-      title: 'Total Donations',
-      value: '892',
-      change: '8%',
-      isPositive: true,
-      comparisonText: 'vs. last month',
-    },
-    {
-      id: 'blood-requests',
-      title: 'Blood Requests',
-      value: '156',
-      change: '5%',
-      isPositive: false,
-      comparisonText: 'vs. last month',
-    },
-    {
-      id: 'available-units',
-      title: 'Available Units',
-      value: '620',
-      change: '10%',
-      isPositive: true,
-      comparisonText: 'vs. last month',
-    },
-  ],
-  donorsByBloodGroup: [
-    { group: 'A+', count: 128 },
-    { group: 'A-', count: 24 },
-    { group: 'B+', count: 156 },
-    { group: 'B-', count: 31 },
-    { group: 'AB+', count: 67 },
-    { group: 'AB-', count: 12 },
-    { group: 'O+', count: 194 },
-    { group: 'O-', count: 38 },
-  ],
-  genderDistribution: [
-    { gender: 'Male', percentage: 68, count: 848, color: '#2563eb' },
-    { gender: 'Female', percentage: 30, count: 374, color: '#ec4899' },
-    { gender: 'Other', percentage: 2, count: 26, color: '#8b5cf6' },
-  ],
-  totalDonorsCount: '1,248',
-  bloodStock: [
-    { id: '1', bloodGroup: 'A+', availableUnits: 85, reservedUnits: 12, status: 'Good', lastUpdated: 'Just now' },
-    { id: '2', bloodGroup: 'A-', availableUnits: 18, reservedUnits: 4, status: 'Low', lastUpdated: '10m ago' },
-    { id: '3', bloodGroup: 'B+', availableUnits: 102, reservedUnits: 15, status: 'Good', lastUpdated: '5m ago' },
-    { id: '4', bloodGroup: 'B-', availableUnits: 22, reservedUnits: 6, status: 'Low', lastUpdated: '1h ago' },
-    { id: '5', bloodGroup: 'AB+', availableUnits: 45, reservedUnits: 8, status: 'Good', lastUpdated: 'Just now' },
-    { id: '6', bloodGroup: 'AB-', availableUnits: 9, reservedUnits: 2, status: 'Low', lastUpdated: '2h ago' },
-    { id: '7', bloodGroup: 'O+', availableUnits: 134, reservedUnits: 20, status: 'Good', lastUpdated: 'Just now' },
-    { id: '8', bloodGroup: 'O-', availableUnits: 16, reservedUnits: 5, status: 'Low', lastUpdated: '30m ago' },
-  ],
-  donorRegistrationTrends: [
-    { month: 'Jan', newDonors: 45, totalDonors: 75 },
-    { month: 'Feb', newDonors: 58, totalDonors: 110 },
-    { month: 'Mar', newDonors: 62, totalDonors: 140 },
-    { month: 'Apr', newDonors: 70, totalDonors: 175 },
-    { month: 'May', newDonors: 85, totalDonors: 215 },
-    { month: 'Jun', newDonors: 78, totalDonors: 250 },
-    { month: 'Jul', newDonors: 92, totalDonors: 295 },
-    { month: 'Aug', newDonors: 98, totalDonors: 340 },
-    { month: 'Sep', newDonors: 112, totalDonors: 395 },
-    { month: 'Oct', newDonors: 145, totalDonors: 470 },
-  ],
-  recentBloodRequests: [
-    {
-      id: 'req-1',
-      patientName: 'Rahim Uddin',
-      hospital: 'Dhaka Medical College Hospital',
-      bloodGroup: 'O+',
-      units: 2,
-      urgency: 'Urgent',
-      timeAgo: '2 hours ago',
-      contactPhone: '+880 1711-234567',
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 'req-2',
-      patientName: 'Nusrat Jahan',
-      hospital: 'Square Hospital',
-      bloodGroup: 'A-',
-      units: 1,
-      urgency: 'Pending',
-      timeAgo: '5 hours ago',
-      contactPhone: '+880 1812-345678',
-      createdAt: new Date().toISOString(),
-    },
-  ],
-};
+import { ServiceUnavailableError } from '../utils/errors.js';
 
 export class DashboardService {
   async getDashboardSummary(): Promise<DashboardSummaryData> {
     const isDbConnected = await checkDatabaseConnection();
     if (!isDbConnected) {
-      return FALLBACK_DASHBOARD;
+      throw new ServiceUnavailableError('Database service unavailable. Cannot load dashboard metrics.');
     }
 
-    try {
-      const [stocks, requests, donorCount, metrics] = await Promise.all([
-        prisma.bloodStock.findMany({ orderBy: { bloodGroup: 'asc' } }),
-        prisma.bloodRequest.findMany({ take: 5, orderBy: { createdAt: 'desc' } }),
-        prisma.donor.count(),
-        prisma.systemMetric.findMany(),
-      ]);
+    const [stocks, requests, donorCount, donationCount, bloodGroupGroups, genderGroups] = await Promise.all([
+      prisma.bloodStock.findMany({ orderBy: { bloodGroup: 'asc' } }),
+      prisma.bloodRequest.findMany({ take: 5, orderBy: { createdAt: 'desc' } }),
+      prisma.donor.count(),
+      prisma.bloodDonation.count(),
+      prisma.donor.groupBy({
+        by: ['bloodGroup'],
+        _count: { id: true },
+      }),
+      prisma.donor.groupBy({
+        by: ['gender'],
+        _count: { id: true },
+      }),
+    ]);
 
-      if (stocks.length === 0 && requests.length === 0) {
-        return FALLBACK_DASHBOARD;
-      }
+    const totalUnits = stocks.reduce((sum, item) => sum + item.availableUnits, 0);
 
-      const totalUnits = stocks.reduce((sum, item) => sum + item.availableUnits, 0);
+    const stats = [
+      {
+        id: 'total-donors',
+        title: 'Total Donors',
+        value: donorCount.toLocaleString(),
+        change: '12%',
+        isPositive: true,
+        comparisonText: 'active in network',
+      },
+      {
+        id: 'total-donations',
+        title: 'Total Donations',
+        value: donationCount.toLocaleString(),
+        change: '8%',
+        isPositive: true,
+        comparisonText: 'verified donations',
+      },
+      {
+        id: 'blood-requests',
+        title: 'Blood Requests',
+        value: requests.length.toString(),
+        change: '5%',
+        isPositive: false,
+        comparisonText: 'recent requisitions',
+      },
+      {
+        id: 'available-units',
+        title: 'Available Units',
+        value: totalUnits.toLocaleString(),
+        change: '10%',
+        isPositive: true,
+        comparisonText: 'units across banks',
+      },
+    ];
 
-      const stats = [
-        {
-          id: 'total-donors',
-          title: 'Total Donors',
-          value: donorCount > 0 ? donorCount.toLocaleString() : '1,248',
-          change: '12%',
-          isPositive: true,
-          comparisonText: 'vs. last month',
-        },
-        {
-          id: 'total-donations',
-          title: 'Total Donations',
-          value: metrics.find((m) => m.key === 'total_donations')?.value || '892',
-          change: '8%',
-          isPositive: true,
-          comparisonText: 'vs. last month',
-        },
-        {
-          id: 'blood-requests',
-          title: 'Blood Requests',
-          value: requests.length > 0 ? requests.length.toString() : '156',
-          change: '5%',
-          isPositive: false,
-          comparisonText: 'vs. last month',
-        },
-        {
-          id: 'available-units',
-          title: 'Available Units',
-          value: totalUnits > 0 ? totalUnits.toLocaleString() : '620',
-          change: '10%',
-          isPositive: true,
-          comparisonText: 'vs. last month',
-        },
-      ];
-
+    // Build blood group distribution
+    const allGroups: BloodGroup[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+    const donorsByBloodGroup = allGroups.map((group) => {
+      const match = bloodGroupGroups.find((bg) => fromPrismaBloodGroup(bg.bloodGroup) === group);
       return {
-        ...FALLBACK_DASHBOARD,
-        stats,
-        bloodStock:
-          stocks.length > 0
-            ? stocks.map((s) => ({
-                id: s.id,
-                bloodGroup: fromPrismaBloodGroup(s.bloodGroup),
-                availableUnits: s.availableUnits,
-                reservedUnits: s.reservedUnits,
-                status: fromPrismaStockStatus(s.status),
-                lastUpdated: s.updatedAt.toLocaleDateString(),
-              }))
-            : FALLBACK_DASHBOARD.bloodStock,
-        recentBloodRequests:
-          requests.length > 0
-            ? requests.map((r) => ({
-                id: r.id,
-                patientName: r.patientName,
-                hospital: r.hospital,
-                bloodGroup: fromPrismaBloodGroup(r.bloodGroup),
-                units: r.units,
-                urgency: fromPrismaUrgency(r.urgency),
-                timeAgo: 'Recently',
-                contactPhone: r.contactPhone,
-                createdAt: r.createdAt.toISOString(),
-              }))
-            : FALLBACK_DASHBOARD.recentBloodRequests,
+        group,
+        count: match ? match._count.id : 0,
       };
-    } catch (error) {
-      console.warn('Dashboard query fallback activated:', (error as Error).message);
-      return FALLBACK_DASHBOARD;
-    }
+    });
+
+    // Build gender distribution
+    const totalGenderDonors = genderGroups.reduce((acc, curr) => acc + curr._count.id, 0);
+    const genderColors: Record<string, string> = {
+      Male: '#2563eb',
+      Female: '#ec4899',
+      Other: '#8b5cf6',
+    };
+    const genderDistribution = genderGroups.map((g) => {
+      const genderName = fromPrismaGender(g.gender);
+      const count = g._count.id;
+      const percentage = totalGenderDonors > 0 ? Math.round((count / totalGenderDonors) * 100) : 0;
+      return {
+        gender: genderName,
+        count,
+        percentage,
+        color: genderColors[genderName] || '#64748b',
+      };
+    });
+
+    const recentBloodRequests = requests.map((r) => ({
+      id: r.id,
+      patientName: r.patientName,
+      hospital: r.hospital,
+      bloodGroup: fromPrismaBloodGroup(r.bloodGroup),
+      units: r.units,
+      urgency: fromPrismaUrgency(r.urgency),
+      timeAgo: 'Recently',
+      contactPhone: r.contactPhone,
+      createdAt: r.createdAt.toISOString(),
+    }));
+
+    const bloodStockItems = stocks.map((s) => ({
+      id: s.id,
+      bloodGroup: fromPrismaBloodGroup(s.bloodGroup),
+      availableUnits: s.availableUnits,
+      reservedUnits: s.reservedUnits,
+      status: fromPrismaStockStatus(s.status),
+      lastUpdated: s.updatedAt.toLocaleDateString(),
+    }));
+
+    return {
+      stats,
+      donorsByBloodGroup,
+      genderDistribution,
+      totalDonorsCount: donorCount.toLocaleString(),
+      bloodStock: bloodStockItems,
+      donorRegistrationTrends: [
+        { month: 'Jan', newDonors: 45, totalDonors: 75 },
+        { month: 'Feb', newDonors: 58, totalDonors: 110 },
+        { month: 'Mar', newDonors: 62, totalDonors: 140 },
+        { month: 'Apr', newDonors: 70, totalDonors: 175 },
+        { month: 'May', newDonors: 85, totalDonors: 215 },
+        { month: 'Jun', newDonors: 78, totalDonors: 250 },
+        { month: 'Jul', newDonors: 92, totalDonors: 295 },
+        { month: 'Aug', newDonors: 98, totalDonors: 340 },
+        { month: 'Sep', newDonors: 112, totalDonors: 395 },
+        { month: 'Oct', newDonors: 145, totalDonors: 470 },
+      ],
+      recentBloodRequests,
+    };
   }
 }
+

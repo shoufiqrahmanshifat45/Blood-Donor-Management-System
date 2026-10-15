@@ -1,9 +1,30 @@
 import { Router } from 'express';
-import { getAppointments, createAppointment } from '../controllers/appointments.controller.js';
+import { AppointmentsController } from '../controllers/appointments.controller.js';
+import { validate } from '../middleware/validate.js';
+import {
+  createAppointmentSchema,
+  updateAppointmentStatusSchema,
+  appointmentQuerySchema,
+} from '../validation/appointment.schema.js';
+import { idParamSchema } from '../validation/donor.schema.js';
 
 const router = Router();
+const controller = new AppointmentsController();
 
-router.get('/', getAppointments);
-router.post('/', createAppointment);
+// Listing & detail endpoints
+router.get('/', validate({ query: appointmentQuerySchema }), controller.getAppointments);
+router.get('/:id', validate({ params: idParamSchema }), controller.getAppointmentById);
+
+// Booking appointment
+router.post('/', validate({ body: createAppointmentSchema }), controller.createAppointment);
+
+// Status updates
+router.patch(
+  '/:id/status',
+  validate({ params: idParamSchema, body: updateAppointmentStatusSchema }),
+  controller.updateAppointmentStatus
+);
+
+router.delete('/:id', validate({ params: idParamSchema }), controller.deleteAppointment);
 
 export default router;
