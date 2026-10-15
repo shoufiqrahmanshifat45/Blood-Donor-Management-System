@@ -38,7 +38,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     email: 'shoufiq.shifat@bdms.org',
     role: 'Admin & System Coordinator',
     phone: '+880 1711-892451',
-    bloodGroup: 'O+',
+    bloodGroup: 'B+',
     totalDonations: 14,
     lastDonated: '3 months ago',
   });

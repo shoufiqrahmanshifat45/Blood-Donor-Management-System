@@ -54,7 +54,7 @@ export const SettingsView: React.FC = () => {
     email: 'shoufiq.shifat@bdms.org',
     phone: '+880 1711-892451',
     organization: 'Blood Donor Management Network Bangladesh',
-    bloodGroup: 'O+',
+    bloodGroup: 'B+',
     bio: 'Lead coordinator overseeing national blood reserve logistics, donor matching algorithms, and emergency dispatch.',
   });
 
@@ -436,18 +436,39 @@ export const SettingsView: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                  Organization / Unit
-                </label>
-                <input
-                  type="text"
-                  value={adminProfile.organization}
-                  onChange={(e) =>
-                    setAdminProfile({ ...adminProfile, organization: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                    Organization / Unit
+                  </label>
+                  <input
+                    type="text"
+                    value={adminProfile.organization}
+                    onChange={(e) =>
+                      setAdminProfile({ ...adminProfile, organization: e.target.value })
+                    }
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                    Blood Group
+                  </label>
+                  <select
+                    value={adminProfile.bloodGroup}
+                    onChange={(e) =>
+                      setAdminProfile({ ...adminProfile, bloodGroup: e.target.value })
+                    }
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                  >
+                    {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((bg) => (
+                      <option key={bg} value={bg}>
+                        {bg}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div>
