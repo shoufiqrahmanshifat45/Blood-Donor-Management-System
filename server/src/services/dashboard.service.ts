@@ -1,5 +1,10 @@
 import { prisma, checkDatabaseConnection } from '../db/prisma.js';
-import { DashboardSummaryData } from '../../../shared/types.js';
+import {
+  DashboardSummaryData,
+  fromPrismaBloodGroup,
+  fromPrismaStockStatus,
+  fromPrismaUrgency,
+} from '../types/shared.js';
 
 // Fallback baseline metrics mirroring production data when database is cold/starting
 const FALLBACK_DASHBOARD: DashboardSummaryData = {
@@ -98,39 +103,6 @@ const FALLBACK_DASHBOARD: DashboardSummaryData = {
       contactPhone: '+880 1812-345678',
       createdAt: new Date().toISOString(),
     },
-    {
-      id: 'req-3',
-      patientName: 'Imran Hossain',
-      hospital: 'National Heart Foundation',
-      bloodGroup: 'B+',
-      units: 3,
-      urgency: 'Pending',
-      timeAgo: '7 hours ago',
-      contactPhone: '+880 1913-456789',
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 'req-4',
-      patientName: 'Tania Akter',
-      hospital: 'United Hospital',
-      bloodGroup: 'AB+',
-      units: 1,
-      urgency: 'Fulfilled',
-      timeAgo: '10 hours ago',
-      contactPhone: '+880 1614-567890',
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 'req-5',
-      patientName: 'Kamrul Hasan',
-      hospital: 'Dhaka Medical College Hospital',
-      bloodGroup: 'O-',
-      units: 2,
-      urgency: 'Urgent',
-      timeAgo: '12 hours ago',
-      contactPhone: '+880 1515-678901',
-      createdAt: new Date().toISOString(),
-    },
   ],
 };
 
@@ -193,25 +165,31 @@ export class DashboardService {
       return {
         ...FALLBACK_DASHBOARD,
         stats,
-        bloodStock: stocks.length > 0 ? stocks.map((s) => ({
-          id: s.id,
-          bloodGroup: s.bloodGroup as any,
-          availableUnits: s.availableUnits,
-          reservedUnits: s.reservedUnits,
-          status: s.status as any,
-          lastUpdated: s.updatedAt.toLocaleDateString(),
-        })) : FALLBACK_DASHBOARD.bloodStock,
-        recentBloodRequests: requests.length > 0 ? requests.map((r) => ({
-          id: r.id,
-          patientName: r.patientName,
-          hospital: r.hospital,
-          bloodGroup: r.bloodGroup as any,
-          units: r.units,
-          urgency: r.urgency as any,
-          timeAgo: 'Recently',
-          contactPhone: r.contactPhone,
-          createdAt: r.createdAt.toISOString(),
-        })) : FALLBACK_DASHBOARD.recentBloodRequests,
+        bloodStock:
+          stocks.length > 0
+            ? stocks.map((s) => ({
+                id: s.id,
+                bloodGroup: fromPrismaBloodGroup(s.bloodGroup),
+                availableUnits: s.availableUnits,
+                reservedUnits: s.reservedUnits,
+                status: fromPrismaStockStatus(s.status),
+                lastUpdated: s.updatedAt.toLocaleDateString(),
+              }))
+            : FALLBACK_DASHBOARD.bloodStock,
+        recentBloodRequests:
+          requests.length > 0
+            ? requests.map((r) => ({
+                id: r.id,
+                patientName: r.patientName,
+                hospital: r.hospital,
+                bloodGroup: fromPrismaBloodGroup(r.bloodGroup),
+                units: r.units,
+                urgency: fromPrismaUrgency(r.urgency),
+                timeAgo: 'Recently',
+                contactPhone: r.contactPhone,
+                createdAt: r.createdAt.toISOString(),
+              }))
+            : FALLBACK_DASHBOARD.recentBloodRequests,
       };
     } catch (error) {
       console.warn('Dashboard query fallback activated:', (error as Error).message);

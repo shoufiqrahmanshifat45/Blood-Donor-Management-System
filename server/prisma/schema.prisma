@@ -10,6 +10,97 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ==========================================
+// Enums
+// ==========================================
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  STAFF
+  VOLUNTEER
+  DONOR
+  HOSPITAL_COORDINATOR
+}
+
+enum BloodGroup {
+  A_POS  @map("A+")
+  A_NEG  @map("A-")
+  B_POS  @map("B+")
+  B_NEG  @map("B-")
+  AB_POS @map("AB+")
+  AB_NEG @map("AB-")
+  O_POS  @map("O+")
+  O_NEG  @map("O-")
+}
+
+enum Gender {
+  MALE   @map("Male")
+  FEMALE @map("Female")
+  OTHER  @map("Other")
+}
+
+enum DonorStatus {
+  ELIGIBLE   @map("Eligible")
+  INELIGIBLE @map("Ineligible")
+  PENDING    @map("Pending")
+}
+
+enum RequestUrgency {
+  URGENT    @map("Urgent")
+  PENDING   @map("Pending")
+  FULFILLED @map("Fulfilled")
+  CANCELLED @map("Cancelled")
+}
+
+enum AppointmentStatus {
+  SCHEDULED @map("Scheduled")
+  COMPLETED @map("Completed")
+  CANCELLED @map("Cancelled")
+  NO_SHOW   @map("NoShow")
+}
+
+enum StockStatus {
+  GOOD     @map("Good")
+  LOW      @map("Low")
+  CRITICAL @map("Critical")
+}
+
+enum NotificationType {
+  INFO
+  URGENT_REQUEST
+  DONATION_REMINDER
+  APPOINTMENT
+  STOCK_ALERT
+}
+
+// ==========================================
+// Models
+// ==========================================
+
+/// System user accounts and authentication roles
+model User {
+  id                String          @id @default(uuid())
+  email             String          @unique
+  password          String          // Hashed password
+  name              String
+  role              Role            @default(ADMIN)
+  phone             String?
+  avatarUrl         String?
+  isActive          Boolean         @default(true)
+  lastLoginAt       DateTime?
+  donorProfile      Donor?
+  bloodRequests     BloodRequest[]  @relation("UserBloodRequests")
+  notifications     Notification[]
+  verifiedDonations BloodDonation[] @relation("VerifiedDonations")
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([role])
+  @@map("users")
+}
+
+/// Backward compatibility model for Admin dashboard users
 model AdminUser {
   id        String   @id @default(uuid())
   name      String
@@ -23,96 +114,152 @@ model AdminUser {
   @@map("admin_users")
 }
 
+/// Registered blood donor profile with eligibility & availability tracking
 model Donor {
-  id               String          @id @default(uuid())
-  name             String
-  bloodGroup       String          // A+, A-, B+, B-, AB+, AB-, O+, O-
-  gender           String          // Male, Female, Other
-  age              Int
-  phone            String
-  email            String?
-  district         String
-  thana            String
-  lastDonationDate DateTime?
-  totalDonations   Int             @default(0)
-  status           String          @default("Eligible") // Eligible, Ineligible, Pending
-  donations        BloodDonation[]
-  appointments     Appointment[]
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
+  id                  String          @id @default(uuid())
+  userId              String?         @unique
+  user                User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name                String
+  bloodGroup          BloodGroup
+  gender              Gender
+  age                 Int
+  phone               String          @unique
+  email               String?
+  district            String
+  thana               String
+  address             String?
+  lastDonationDate    DateTime?
+  totalDonations      Int             @default(0)
+  status              DonorStatus     @default(ELIGIBLE)
+  
+  // Responsible eligibility & availability modeling
+  isAvailable         Boolean         @default(true)
+  readyForEmergency   Boolean         @default(true)
+  weightKg            Float?
+  nextEligibleDate    DateTime?       // Clinical cooldown (e.g. 90-120 days post donation)
+  ineligibilityReason String?         // Reason for medical deferral if ineligible
+  
+  donations           BloodDonation[]
+  appointments        Appointment[]
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
 
   @@index([bloodGroup])
   @@index([district, thana])
+  @@index([status, isAvailable])
+  @@index([phone])
   @@map("donors")
 }
 
+/// Blood donation records linking donors, requests, and verification staff
 model BloodDonation {
-  id           String   @id @default(uuid())
-  donorId      String
-  donor        Donor    @relation(fields: [donorId], references: [id], onDelete: Cascade)
-  bloodGroup   String
-  units        Int      @default(1)
-  donationDate DateTime @default(now())
-  location     String
-  notes        String?
-  createdAt    DateTime @default(now())
+  id             String        @id @default(uuid())
+  donorId        String
+  donor          Donor         @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  bloodRequestId String?
+  bloodRequest   BloodRequest? @relation(fields: [bloodRequestId], references: [id], onDelete: SetNull)
+  bloodGroup     BloodGroup
+  units          Int           @default(1)
+  donationDate   DateTime      @default(now())
+  location       String
+  verifiedById   String?
+  verifiedBy     User?         @relation("VerifiedDonations", fields: [verifiedById], references: [id], onDelete: SetNull)
+  notes          String?
+  createdAt      DateTime      @default(now())
 
   @@index([donorId])
+  @@index([bloodRequestId])
+  @@index([bloodGroup])
+  @@index([donationDate])
   @@map("blood_donations")
 }
 
+/// Inventory levels for each blood group
 model BloodStock {
-  id             String   @id @default(uuid())
-  bloodGroup     String   @unique // A+, A-, B+, B-, AB+, AB-, O+, O-
-  availableUnits Int      @default(0)
-  reservedUnits  Int      @default(0)
-  status         String   @default("Good") // Good, Low, Critical
-  updatedAt      DateTime @updatedAt
+  id             String      @id @default(uuid())
+  bloodGroup     BloodGroup  @unique
+  availableUnits Int         @default(0)
+  reservedUnits  Int         @default(0)
+  status         StockStatus @default(GOOD)
+  updatedAt      DateTime    @updatedAt
 
   @@map("blood_stocks")
 }
 
+/// Blood requests from hospitals or emergency patients
 model BloodRequest {
-  id           String   @id @default(uuid())
-  patientName  String
-  hospital     String
-  bloodGroup   String
-  units        Int      @default(1)
-  urgency      String   @default("Urgent") // Urgent, Pending, Fulfilled, Cancelled
-  contactPhone String
-  notes        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String          @id @default(uuid())
+  patientName    String
+  hospital       String
+  bloodGroup     BloodGroup
+  units          Int             @default(1)
+  urgency        RequestUrgency  @default(URGENT)
+  contactPhone   String
+  contactName    String?
+  notes          String?
+  requiredDate   DateTime?
+  fulfilledUnits Int             @default(0)
+  requesterId    String?
+  requester      User?           @relation("UserBloodRequests", fields: [requesterId], references: [id], onDelete: SetNull)
+  donations      BloodDonation[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 
   @@index([urgency])
   @@index([bloodGroup])
+  @@index([hospital])
+  @@index([createdAt])
   @@map("blood_requests")
 }
 
+/// Scheduled donation or clinic appointments
 model Appointment {
-  id              String   @id @default(uuid())
+  id              String            @id @default(uuid())
   donorId         String?
-  donor           Donor?   @relation(fields: [donorId], references: [id], onDelete: SetNull)
+  donor           Donor?            @relation(fields: [donorId], references: [id], onDelete: SetNull)
   donorName       String
   donorPhone      String
-  bloodGroup      String
+  bloodGroup      BloodGroup
   appointmentDate DateTime
   appointmentTime String
   location        String
-  status          String   @default("Scheduled") // Scheduled, Completed, Cancelled
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  status          AppointmentStatus @default(SCHEDULED)
+  notes           String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
   @@index([donorId])
+  @@index([appointmentDate])
+  @@index([status])
   @@map("appointments")
 }
 
+/// System, emergency, and reminder notifications
+model Notification {
+  id                String           @id @default(uuid())
+  userId            String?
+  user              User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title             String
+  message           String
+  type              NotificationType @default(INFO)
+  isRead            Boolean          @default(false)
+  relatedEntityId   String?
+  relatedEntityType String?          // e.g. "BloodRequest", "Appointment"
+  createdAt         DateTime         @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+/// Dashboard aggregated KPI metrics
 model SystemMetric {
   id        String   @id @default(uuid())
   key       String   @unique
   value     String
   change    String
-  trend     String   // up, down, neutral
+  trend     String   // "up", "down", "neutral"
   updatedAt DateTime @updatedAt
 
   @@map("system_metrics")
