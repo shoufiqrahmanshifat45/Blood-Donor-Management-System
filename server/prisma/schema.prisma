@@ -264,3 +264,10 @@ model SystemMetric {
 
   @@map("system_metrics")
 }
+
+/// Existing Neon sample table preserved
+model playing_with_neon {
+  id    Int    @id @default(autoincrement())
+  name  String
+  value Float? @db.Real
+}
