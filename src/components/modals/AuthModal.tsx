@@ -14,7 +14,7 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react';
-import adminPhoto from '../../assets/admin-photo.png';
+import { useAdminPhoto } from '../../utils/avatarStorage';
 import { useNotification } from '../../context/NotificationContext';
 
 interface AuthModalProps {
@@ -28,6 +28,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onClose,
   initialMode = 'profile',
 }) => {
+  const { photo: adminPhoto } = useAdminPhoto();
   const [mode, setMode] = useState<'profile' | 'login' | 'register'>(initialMode);
   const [showPassword, setShowPassword] = useState(false);
 

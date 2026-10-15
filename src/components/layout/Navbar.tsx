@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Menu, Search, Bell, X, Clock } from 'lucide-react';
-import adminPhoto from '../../assets/admin-photo.png';
+import { useAdminPhoto } from '../../utils/avatarStorage';
 import { ThemeToggle } from '../common/ThemeToggle';
 
 interface NavbarProps {
@@ -18,6 +18,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onProfileClick,
   onSearchSubmit,
 }) => {
+  const { photo: adminPhoto } = useAdminPhoto();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
