@@ -1,5 +1,7 @@
 import React from 'react';
-import giveBloodSaveLivesImg from '../../assets/give-blood-save-lives.png';
+import { useTheme } from '../../context/ThemeContext';
+import giveBloodSaveLivesDark from '../../assets/give-blood-save-lives-dark.png';
+import giveBloodSaveLivesLight from '../../assets/give-blood-save-lives-light.png';
 
 /**
  * Pixel-perfect SVG Icons matching the reference dashboard mockup.
@@ -10,6 +12,7 @@ export const BloodDonorBrandLogo: React.FC<{ className?: string }> = ({ classNam
   <svg viewBox="0 0 36 36" fill="none" className={className}>
     {/* Vibrant Red Heart */}
     <path
+      className="brand-heart-fill transition-colors duration-200"
       d="M18 31.2 C17.3 30.7 4.5 22.8 2.3 15.5 C0.2 8.7 4.8 3.5 11.2 3.5 C15 3.5 17 5.5 18 7 C19 5.5 21 3.5 24.8 3.5 C31.2 3.5 35.8 8.7 33.7 15.5 C31.5 22.8 18.7 30.7 18 31.2 Z"
       fill="#ef4444"
     />
@@ -197,29 +200,123 @@ export const AvailableUnitsStatIcon: React.FC<{ className?: string }> = ({ class
   </svg>
 );
 
-// 13. Give Blood Save Lives Section Component (Bottom of Sidebar)
+// 13. Give Blood Save Lives Section Component (Bottom of Sidebar - Multi-Theme Vector & PNG Hybrid)
 export const GiveBloodSaveLivesWidget: React.FC<{ className?: string; imgClassName?: string }> = ({
-  className = "px-3 py-2.5 mt-auto border-t border-[#16223d] relative overflow-hidden bg-[#0c1527] select-none flex flex-col items-center justify-center",
-  imgClassName = "w-full max-w-[115px] h-auto object-contain pointer-events-none drop-shadow-sm transition-all"
-}) => (
-  <div className={className}>
-    <img
-      src={giveBloodSaveLivesImg}
-      alt="Give Blood Save lives"
-      className={imgClassName}
-    />
-  </div>
-);
+  className = "give-blood-save-lives-widget px-3 py-2.5 mt-auto border-t border-slate-100 dark:border-slate-800/80 relative overflow-hidden select-none flex flex-col items-center justify-center transition-colors",
+}) => {
+  const { mode, resolvedTheme, customAccent } = useTheme();
+
+  const isCustom = mode === 'custom';
+  const isLight = resolvedTheme === 'light';
+
+  const accentColorMap: Record<string, string> = {
+    crimson: '#ef4444',
+    sapphire: '#2563eb',
+    emerald: '#10b981',
+    amethyst: '#8b5cf6',
+  };
+
+  const dropletColor = isCustom ? (accentColorMap[customAccent] || '#ef4444') : '#ef4444';
+  const textColor = isLight ? '#0f172a' : '#ffffff';
+  const backLineColor = isLight
+    ? '#64748b'
+    : isCustom
+    ? customAccent === 'sapphire'
+      ? '#93c5fd'
+      : customAccent === 'emerald'
+      ? '#6ee7b7'
+      : customAccent === 'amethyst'
+      ? '#c4b5fd'
+      : '#fca5a5'
+    : '#94a3b8';
+  const bottomPulseColor = isCustom ? (accentColorMap[customAccent] || '#ef4444') : '#ef4444';
+
+  return (
+    <div className={className}>
+      <svg
+        viewBox="0 0 240 160"
+        className="w-full max-w-[130px] h-auto select-none pointer-events-none transition-all duration-300"
+        style={isCustom ? { filter: `drop-shadow(0 0 10px var(--accent-glow))` } : undefined}
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* Back ECG wave beside/behind droplet */}
+        <path
+          d="M132 62 L140 62 L144 50 L149 74 L153 58 L157 66 L161 62 L175 62"
+          stroke={backLineColor}
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="transition-colors duration-300"
+        />
+
+        {/* Blood Droplet (Responsive to custom accent in custom mode, classic red in light/dark) */}
+        <path
+          d="M 120 18 C 120 18 97 50 97 68 A 23 23 0 0 0 143 68 C 143 50 120 18 120 18 Z"
+          fill={dropletColor}
+          className="transition-colors duration-300"
+        />
+
+        {/* Medical Plus Cross inside Droplet */}
+        <rect x="116.5" y="55" width="7" height="22" rx="2" fill="white" />
+        <rect x="109" y="62.5" width="22" height="7" rx="2" fill="white" />
+
+        {/* Cursive Script Text "Give Blood" and "Save Lives" */}
+        <text
+          x="120"
+          y="103"
+          fill={textColor}
+          fontSize="24"
+          fontWeight="700"
+          textAnchor="middle"
+          style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', cursive" }}
+          className="transition-colors duration-300"
+        >
+          Give Blood
+        </text>
+        <text
+          x="120"
+          y="127"
+          fill={textColor}
+          fontSize="24"
+          fontWeight="700"
+          textAnchor="middle"
+          style={{ fontFamily: "'Dancing Script', 'Satisfy', 'Caveat', cursive" }}
+          className="transition-colors duration-300"
+        >
+          Save Lives
+        </text>
+
+        {/* Bottom ECG Pulse Line with QRS Complex & Waveform */}
+        <path
+          d="M 30 142 L 56 142 L 62 142 L 67 124 L 74 160 L 80 133 L 85 146 L 90 142 L 115 142 Q 125 138 135 142 T 155 142 T 175 142 T 195 142 L 210 142"
+          stroke={bottomPulseColor}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="transition-colors duration-300"
+        />
+      </svg>
+    </div>
+  );
+};
 
 // 14. Search Blood Group Section Header Logo (Standalone red drop with white circle & red cross)
 export const SearchBloodGroupHeaderLogo: React.FC<{ className?: string }> = ({ className = "w-7 h-7" }) => (
   <svg viewBox="0 0 24 28" fill="none" className={className}>
     <path
+      className="search-header-drop transition-colors duration-200"
       d="M12 2 C12 2 3.5 11.5 3.5 17.5 C3.5 22.2 7.3 26 12 26 C16.7 26 20.5 22.2 20.5 17.5 C20.5 11.5 12 2 12 2 Z"
       fill="#ef4444"
     />
     <circle cx="12" cy="18" r="4.8" fill="white" />
-    <path d="M12 15.5 V20.5 M9.5 18 H14.5" stroke="#ef4444" strokeWidth="2.2" strokeLinecap="round" />
+    <path
+      className="search-header-cross transition-colors duration-200"
+      d="M12 15.5 V20.5 M9.5 18 H14.5"
+      stroke="#ef4444"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+    />
   </svg>
 );
 

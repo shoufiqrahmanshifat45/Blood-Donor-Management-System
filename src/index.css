@@ -127,19 +127,40 @@ html.theme-custom .bg-white {
 /* Sidebar ("Task Bar") in Custom Mode */
 html.theme-custom aside {
   background-color: #080d19 !important;
-  border-right-color: rgba(255, 255, 255, 0.08) !important;
+  border-right: 1px solid var(--accent-light) !important;
+  box-shadow: 4px 0 25px -5px var(--accent-glow) !important;
 }
 
 html.theme-custom .sidebar-active-tab {
   background-color: var(--accent-color) !important;
-  box-shadow: 0 4px 14px -1px var(--accent-glow) !important;
+  box-shadow: 0 4px 18px -2px var(--accent-glow) !important;
+  color: #ffffff !important;
+}
+
+html.theme-custom aside nav button:not(.sidebar-active-tab):hover {
+  background-color: var(--accent-light) !important;
+  color: var(--accent-color) !important;
+}
+
+html.theme-custom aside nav button:not(.sidebar-active-tab):hover svg {
+  color: var(--accent-color) !important;
+}
+
+html.theme-custom .tools-active-item {
+  background-color: var(--accent-light) !important;
+  color: var(--accent-color) !important;
+  font-weight: 600 !important;
+}
+
+html.theme-custom .give-blood-widget {
+  border-top-color: var(--accent-light) !important;
 }
 
 /* Notification Bar / Top Navbar in Custom Mode */
 html.theme-custom header.notification-bar,
 html.theme-custom header {
   background-color: #080d19 !important;
-  border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  border-bottom: 1px solid var(--accent-light) !important;
   box-shadow: 0 4px 20px -2px var(--accent-glow) !important;
 }
 
@@ -150,7 +171,7 @@ html.theme-custom .notification-bell-btn {
 }
 
 html.theme-custom .notification-bell-btn:hover {
-  background-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: var(--accent-light) !important;
   color: var(--accent-color) !important;
   border-color: var(--accent-color) !important;
 }
@@ -164,27 +185,41 @@ html.theme-custom .notification-badge {
 
 html.theme-custom .notification-panel {
   background-color: #0a0f1d !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: var(--accent-light) !important;
   box-shadow: 0 10px 30px -5px var(--accent-glow) !important;
 }
 
 /* Search Bar in Custom Mode */
 html.theme-custom .search-bar-container input,
 html.theme-custom .search-bar-input {
-  background-color: #0e1628 !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background-color: #0c1527 !important;
+  border: 1.5px solid var(--accent-color) !important;
   color: #ffffff !important;
-  box-shadow: 0 0 12px -2px var(--accent-glow) !important;
+  box-shadow: 0 0 16px -2px var(--accent-glow) !important;
 }
 
 html.theme-custom .search-bar-container input:focus,
 html.theme-custom .search-bar-input:focus {
   border-color: var(--accent-color) !important;
-  box-shadow: 0 0 0 2px var(--accent-glow) !important;
+  box-shadow: 0 0 0 3px var(--accent-glow), 0 0 24px var(--accent-glow) !important;
 }
 
 html.theme-custom .search-bar-icon {
   color: var(--accent-color) !important;
+  filter: drop-shadow(0 0 6px var(--accent-glow)) !important;
+}
+
+/* Dashboard Search Blood Group Section in Custom Mode */
+html.theme-custom .search-blood-group-card {
+  border-color: var(--accent-light) !important;
+  box-shadow: 0 4px 20px -2px var(--accent-glow) !important;
+}
+
+html.theme-custom .search-blood-group-card input:focus,
+html.theme-custom .search-blood-group-card select:focus,
+html.theme-custom .search-blood-group-card button[role="combobox"]:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 2px var(--accent-glow) !important;
 }
 
 /* Custom Accent Buttons & Avatar */
@@ -197,6 +232,20 @@ html.theme-custom button[type="submit"] {
 html.theme-custom .user-avatar-ring {
   ring-color: var(--accent-color) !important;
   box-shadow: 0 0 12px var(--accent-glow) !important;
+}
+
+/* Custom Mode Brand & Search Header Logos */
+html.theme-custom .brand-heart-fill {
+  fill: var(--accent-color) !important;
+  filter: drop-shadow(0 0 8px var(--accent-glow)) !important;
+}
+
+html.theme-custom .search-header-drop {
+  fill: var(--accent-color) !important;
+}
+
+html.theme-custom .search-header-cross {
+  stroke: var(--accent-color) !important;
 }
 
 /* Custom scrollbar for sleek dashboard UI */

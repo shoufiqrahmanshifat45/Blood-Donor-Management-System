@@ -123,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
                     onClick={() => onTabChange(tool.id)}
                     className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[11.5px] transition-all ${
                       isToolActive
-                        ? 'bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white font-semibold'
+                        ? 'tools-active-item bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white font-semibold'
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/70 dark:hover:bg-white/5'
                     }`}
                   >
@@ -142,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
             onClick={() => onTabChange('settings')}
             className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-[13px] transition-all duration-150 ${
               currentTab === 'settings'
-                ? 'bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white font-semibold'
+                ? 'tools-active-item bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white font-semibold'
                 : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/90 dark:hover:bg-white/5'
             }`}
           >
@@ -153,7 +153,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
       </nav>
 
       {/* Decorative Blood Donation Graphic at the bottom */}
-      <GiveBloodSaveLivesWidget className="px-3 py-2.5 mt-auto border-t border-slate-200/80 dark:border-[#16223d] relative overflow-hidden bg-[#0c1527] select-none flex flex-col items-center justify-center transition-colors" />
+      <GiveBloodSaveLivesWidget className="give-blood-widget px-3 py-3 mt-auto border-t border-slate-100 dark:border-slate-800/80 bg-transparent relative overflow-hidden select-none flex flex-col items-center justify-center transition-colors" />
     </aside>
   );
 };

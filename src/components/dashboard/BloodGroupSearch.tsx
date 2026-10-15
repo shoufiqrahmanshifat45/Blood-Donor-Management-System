@@ -26,7 +26,7 @@ export const BloodGroupSearch: React.FC<BloodGroupSearchProps> = ({ onSearch, is
   };
 
   return (
-    <div className="bg-white dark:bg-[#0c1527] rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-[0_1px_6px_rgba(0,0,0,0.02)] transition-colors">
+    <div className="search-blood-group-card bg-white dark:bg-[#0c1527] rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-[0_1px_6px_rgba(0,0,0,0.02)] transition-colors">
       {/* Header matching reference mockup */}
       <div className="flex items-center gap-3 mb-4">
         <SearchBloodGroupHeaderLogo className="w-7 h-8 shrink-0" />

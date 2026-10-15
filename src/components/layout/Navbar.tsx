@@ -73,7 +73,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, searchQuery, onSea
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search donors, blood group, or request ID..."
-            className="search-bar-input w-full pl-10 pr-4 py-2 bg-[#f1f5f9]/80 dark:bg-[#131d33] hover:bg-[#edf2f7] dark:hover:bg-[#182542] focus:bg-white dark:focus:bg-[#15213b] border border-transparent dark:border-slate-800/60 rounded-xl text-xs md:text-sm text-slate-700 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all"
+            className="search-bar-input w-full pl-10 pr-4 py-2 bg-[#f1f5f9]/80 dark:bg-[#131d33] hover:bg-[#edf2f7] dark:hover:bg-[#182542] focus:bg-white dark:focus:bg-[#15213b] border border-slate-200/80 dark:border-slate-800/60 rounded-xl text-xs md:text-sm text-slate-700 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all"
           />
         </div>
       </div>
