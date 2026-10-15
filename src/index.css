@@ -242,6 +242,10 @@ html.theme-custom .brand-heart-fill {
   filter: drop-shadow(0 0 8px var(--accent-glow)) !important;
 }
 
+html.theme-custom .brand-cross-stroke {
+  stroke: var(--accent-color) !important;
+}
+
 html.theme-custom .search-header-drop {
   fill: var(--accent-color) !important;
 }

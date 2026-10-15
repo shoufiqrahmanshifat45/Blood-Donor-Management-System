@@ -7,32 +7,32 @@ import giveBloodSaveLivesLight from '../../assets/give-blood-save-lives-light.pn
  * Pixel-perfect SVG Icons matching the reference dashboard mockup.
  */
 
-// 1. Blood Donor Management System Brand Logo (Heart with 2 drops and medical cross)
+// 1. Blood Donor Management System Brand Logo (Exact match to official brand icon)
 export const BloodDonorBrandLogo: React.FC<{ className?: string }> = ({ className = "w-9 h-9" }) => (
-  <svg viewBox="0 0 36 36" fill="none" className={className}>
-    {/* Vibrant Red Heart */}
+  <svg viewBox="0 0 52 45" fill="none" className={className}>
+    {/* Heart background */}
     <path
       className="brand-heart-fill transition-colors duration-200"
-      d="M18 31.2 C17.3 30.7 4.5 22.8 2.3 15.5 C0.2 8.7 4.8 3.5 11.2 3.5 C15 3.5 17 5.5 18 7 C19 5.5 21 3.5 24.8 3.5 C31.2 3.5 35.8 8.7 33.7 15.5 C31.5 22.8 18.7 30.7 18 31.2 Z"
+      d="M26 44.5 C24.6 43.4 0 27.2 0 14.5 C0 5.7 7 0.5 15 0.5 C19.7 0.5 23.7 3.3 26 6.5 C28.3 3.3 32.3 0.5 37 0.5 C45 0.5 52 5.7 52 14.5 C52 27.2 27.4 43.4 26 44.5 Z"
       fill="#ef4444"
     />
-    {/* Right white droplet accent */}
+    {/* Main White Teardrop */}
     <path
-      d="M20.5 9.5 C20.5 9.5 25.5 13.5 25.5 18 C25.5 21.5 23 24 20 24.5 C22.5 23 24 20.5 24 18 C24 14.5 20.5 11 20.5 9.5 Z"
-      fill="white"
-      opacity="0.95"
+      d="M21.5 7.8 C21.5 7.8 11.2 20.5 11.2 27.2 C11.2 33 15.8 37 21.5 37 C27.2 37 31.8 33 31.8 27.2 C31.8 20.5 21.5 7.8 21.5 7.8 Z"
+      fill="#ffffff"
     />
-    {/* Left white droplet */}
+    {/* Red Plus / Cross inside Teardrop */}
     <path
-      d="M15 8 C15 8 9 14.5 9 19 C9 22.5 11.7 25 15 25 C18.3 25 21 22.5 21 19 C21 14.5 15 8 15 8 Z"
-      fill="white"
-    />
-    {/* Red medical cross inside left droplet */}
-    <path
-      d="M15 14 V21 M11.5 17.5 H18.5"
+      className="brand-cross-stroke transition-colors duration-200"
+      d="M21.5 20.5 V31.5 M16 26 H27"
       stroke="#ef4444"
-      strokeWidth="2.4"
+      strokeWidth="3.5"
       strokeLinecap="round"
+    />
+    {/* Accent Crescent Droplet */}
+    <path
+      d="M31 10.5 C31 10.5 37.7 18 37.7 25 C37.7 30 35 34 32 35.5 C35.3 33.3 36.5 29 36.5 25 C36.5 19 31 10.5 31 10.5 Z"
+      fill="#ffffff"
     />
   </svg>
 );
