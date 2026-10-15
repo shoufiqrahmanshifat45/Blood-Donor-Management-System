@@ -21,6 +21,7 @@ import {
   RECENT_BLOOD_REQUESTS,
 } from '../data/mockData';
 import { useNotification } from '../context/NotificationContext';
+import { generateReportPDF } from '../utils/pdfExport';
 
 export const ReportsView: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'30d' | '90d' | 'year' | 'all'>('30d');
@@ -31,48 +32,17 @@ export const ReportsView: React.FC = () => {
   const totalUnitsAvailable = BLOOD_STOCK_DATA.reduce((sum, item) => sum + item.units, 0);
   const criticalShortageGroups = BLOOD_STOCK_DATA.filter((s) => s.status === 'Low');
 
-  // Export CSV generator
-  const handleExportCSV = () => {
-    const csvRows = [
-      ['Blood Donor Management System - Inventory and Demographics Report'],
-      ['Generated On', new Date().toLocaleString()],
-      ['Admin', 'Shoufiq Rahman Shifat'],
-      [],
-      ['--- Blood Stock Inventory ---'],
-      ['Blood Group', 'Available Units', 'Status', 'Minimum Recommended'],
-      ...BLOOD_STOCK_DATA.map((item) => [
-        item.bloodGroup,
-        item.units,
-        item.status,
-        item.status === 'Low' ? '30 Units' : '50 Units',
-      ]),
-      [],
-      ['--- Donor Distribution by Blood Group ---'],
-      ['Blood Group', 'Registered Donors', 'Share (%)'],
-      ...DONORS_BY_BLOOD_GROUP.map((d) => [
-        d.bloodGroup,
-        d.count,
-        `${((d.count / totalDonors) * 100).toFixed(1)}%`,
-      ]),
-      [],
-      ['--- Monthly Registration Trend ---'],
-      ['Month', 'New Donors', 'Total Donors'],
-      ...DONOR_REGISTRATION_TRENDS.map((t) => [t.month, t.newDonors, t.totalDonors]),
-    ];
-
-    const csvContent =
-      'data:text/csv;charset=utf-8,' +
-      csvRows.map((e) => e.map((cell) => `"${cell}"`).join(',')).join('\n');
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `BDMS_Report_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    success('Report Exported', 'The report CSV has been downloaded successfully.');
+  // Export PDF generator
+  const handleExportPDF = () => {
+    try {
+      generateReportPDF({
+        timeRange,
+        adminName: 'Shoufiq Rahman Shifat',
+      });
+      success('Report Exported', 'The report PDF has been downloaded successfully.');
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+    }
   };
 
   return (
@@ -114,13 +84,13 @@ export const ReportsView: React.FC = () => {
             ))}
           </div>
 
-          {/* Export Button */}
+          {/* Export PDF Button */}
           <button
-            onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors shrink-0"
+            onClick={handleExportPDF}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#dc2626] hover:bg-[#b91c1c] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors shrink-0 cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
-            Export CSV
+            Export PDF
           </button>
         </div>
       </div>
