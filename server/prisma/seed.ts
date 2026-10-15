@@ -253,7 +253,51 @@ async function main() {
     },
   });
 
-  console.log(`✓ Created 6 synthetic donors with realistic eligibility and availability statuses`);
+  const donor7 = await prisma.donor.create({
+    data: {
+      name: 'Nusrat Jahan',
+      bloodGroup: BloodGroup.A_NEG,
+      gender: Gender.FEMALE,
+      age: 23,
+      phone: '+880 1823-789012',
+      email: 'nusrat.jahan@example.com',
+      district: 'Dhaka',
+      thana: 'Mirpur',
+      address: 'Section 2, Mirpur',
+      totalDonations: 3,
+      status: DonorStatus.ELIGIBLE,
+      isAvailable: true,
+      readyForEmergency: true,
+      weightKg: 52.0,
+      lastDonationDate: new Date('2025-03-25'),
+      nextEligibleDate: new Date('2025-06-25'),
+      ineligibilityReason: null,
+    },
+  });
+
+  const donor8 = await prisma.donor.create({
+    data: {
+      name: 'Tasnim Rahman',
+      bloodGroup: BloodGroup.AB_NEG,
+      gender: Gender.FEMALE,
+      age: 28,
+      phone: '+880 1512-901234',
+      email: 'tasnim.rahman@example.com',
+      district: 'Dhaka',
+      thana: 'Mohakhali',
+      address: 'Wireless Gate, Mohakhali',
+      totalDonations: 7,
+      status: DonorStatus.ELIGIBLE,
+      isAvailable: true,
+      readyForEmergency: true,
+      weightKg: 56.0,
+      lastDonationDate: new Date('2025-02-14'),
+      nextEligibleDate: new Date('2025-05-14'),
+      ineligibilityReason: null,
+    },
+  });
+
+  console.log(`✓ Created 8 synthetic donors covering all 8 blood groups with realistic eligibility and availability statuses`);
 
   // 4. Seed Blood Requests
   console.log('\n[4/8] Seeding Blood Requests...');

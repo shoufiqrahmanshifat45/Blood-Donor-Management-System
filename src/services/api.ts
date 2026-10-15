@@ -117,44 +117,95 @@ export const api = {
   /**
    * Search and filter donors in PostgreSQL database
    */
+  /**
+   * Search and filter donors in PostgreSQL database
+   */
   async searchDonors(query: SearchDonorsQuery): Promise<{ donors: DetailedDonor[]; total: number }> {
     const params = new URLSearchParams();
-    if (query.bloodGroup) params.append('bloodGroup', query.bloodGroup);
-    if (query.district) params.append('district', query.district);
-    if (query.thana) params.append('thana', query.thana);
+    if (query.bloodGroup && query.bloodGroup !== 'ALL') params.append('bloodGroup', query.bloodGroup);
+    if (query.district && query.district !== 'ALL') params.append('district', query.district);
+    if (query.thana && query.thana !== 'ALL') params.append('thana', query.thana);
     if (query.search) params.append('search', query.search);
     if (query.page) params.append('page', String(query.page));
-    if (query.limit) params.append('limit', String(query.limit));
+    if (query.limit) params.append('limit', String(query.limit || 50));
 
     const qs = params.toString();
     try {
-      const serverResult = await request<{ donors: DetailedDonor[]; total: number }>(`/donors${qs ? `?${qs}` : ''}`);
-      if (serverResult && Array.isArray(serverResult.donors)) {
-        return serverResult;
+      const serverResult = await request<any>(`/donors${qs ? `?${qs}` : ''}`);
+      let donorsList: any[] = [];
+
+      if (Array.isArray(serverResult)) {
+        donorsList = serverResult;
+      } else if (serverResult && Array.isArray(serverResult.donors)) {
+        donorsList = serverResult.donors;
       }
-      return { donors: [], total: 0 };
-    } catch (error) {
-      console.warn('⚠️ Database query for donors failed:', (error as Error).message);
-      // Fallback to seeded demo donor list for initial preview if DB not yet connected
+
+      if (donorsList.length > 0) {
+        const normalized: DetailedDonor[] = donorsList.map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          bloodGroup: d.bloodGroup,
+          gender: d.gender || 'Male',
+          age: typeof d.age === 'number' ? d.age : 25,
+          phone: d.phone,
+          email: d.email || '',
+          district: d.district || 'Dhaka',
+          thana: d.thana || 'Central',
+          lastDonationDate: d.lastDonationDate || null,
+          totalDonations: typeof d.totalDonations === 'number' ? d.totalDonations : 0,
+          status: d.status || 'Eligible',
+          weightKg: typeof d.weightKg === 'number' ? d.weightKg : 65,
+          readyForEmergency: d.readyForEmergency !== undefined ? d.readyForEmergency : true,
+          notes: d.ineligibilityReason || d.notes,
+        }));
+        return { donors: normalized, total: normalized.length };
+      }
+
+      // If server returned 0 donors or an empty array, fall back to INITIAL_DONORS
       let donors = [...INITIAL_DONORS];
-      if (query.bloodGroup) {
+      if (query.bloodGroup && query.bloodGroup !== 'ALL') {
         donors = donors.filter((d) => d.bloodGroup.toUpperCase() === query.bloodGroup?.toUpperCase());
       }
-      if (query.district) {
+      if (query.district && query.district !== 'ALL') {
         donors = donors.filter((d) => d.district.toLowerCase() === query.district?.toLowerCase());
       }
-      if (query.thana) {
+      if (query.thana && query.thana !== 'ALL') {
         donors = donors.filter((d) => d.thana.toLowerCase().includes(query.thana?.toLowerCase() || ''));
       }
       if (query.search) {
         const s = query.search.toLowerCase();
         donors = donors.filter(
           (d) =>
-            d.name.toLowerCase().includes(s) ||
-            d.phone.includes(s) ||
-            d.district.toLowerCase().includes(s) ||
-            d.thana.toLowerCase().includes(s) ||
-            d.bloodGroup.toLowerCase().includes(s)
+            (d.name && d.name.toLowerCase().includes(s)) ||
+            (d.phone && d.phone.includes(s)) ||
+            (d.district && d.district.toLowerCase().includes(s)) ||
+            (d.thana && d.thana.toLowerCase().includes(s)) ||
+            (d.bloodGroup && d.bloodGroup.toLowerCase().includes(s))
+        );
+      }
+      return { donors, total: donors.length };
+    } catch (error) {
+      console.warn('⚠️ Database query for donors failed, falling back to mock dataset:', (error as Error).message);
+      // Fallback to seeded demo donor list for initial preview if DB not yet connected
+      let donors = [...INITIAL_DONORS];
+      if (query.bloodGroup && query.bloodGroup !== 'ALL') {
+        donors = donors.filter((d) => d.bloodGroup.toUpperCase() === query.bloodGroup?.toUpperCase());
+      }
+      if (query.district && query.district !== 'ALL') {
+        donors = donors.filter((d) => d.district.toLowerCase() === query.district?.toLowerCase());
+      }
+      if (query.thana && query.thana !== 'ALL') {
+        donors = donors.filter((d) => d.thana.toLowerCase().includes(query.thana?.toLowerCase() || ''));
+      }
+      if (query.search) {
+        const s = query.search.toLowerCase();
+        donors = donors.filter(
+          (d) =>
+            (d.name && d.name.toLowerCase().includes(s)) ||
+            (d.phone && d.phone.includes(s)) ||
+            (d.district && d.district.toLowerCase().includes(s)) ||
+            (d.thana && d.thana.toLowerCase().includes(s)) ||
+            (d.bloodGroup && d.bloodGroup.toLowerCase().includes(s))
         );
       }
       return { donors, total: donors.length };
@@ -166,8 +217,26 @@ export const api = {
    */
   async getDonorById(id: string): Promise<DetailedDonor | null> {
     try {
-      const res = await request<DetailedDonor>(`/donors/${id}`);
-      if (res) return res;
+      const res = await request<any>(`/donors/${id}`);
+      if (res && res.id) {
+        return {
+          id: res.id,
+          name: res.name,
+          bloodGroup: res.bloodGroup,
+          gender: res.gender || 'Male',
+          age: typeof res.age === 'number' ? res.age : 25,
+          phone: res.phone,
+          email: res.email || '',
+          district: res.district || 'Dhaka',
+          thana: res.thana || 'Central',
+          lastDonationDate: res.lastDonationDate || null,
+          totalDonations: typeof res.totalDonations === 'number' ? res.totalDonations : 0,
+          status: res.status || 'Eligible',
+          weightKg: typeof res.weightKg === 'number' ? res.weightKg : 65,
+          readyForEmergency: res.readyForEmergency !== undefined ? res.readyForEmergency : true,
+          notes: res.ineligibilityReason || res.notes,
+        };
+      }
     } catch {}
     return INITIAL_DONORS.find((d) => d.id === id) || null;
   },
@@ -177,7 +246,7 @@ export const api = {
    * Throws error if PostgreSQL is offline to prevent false assumption of persistence.
    */
   async createDonor(dto: CreateDonorDto): Promise<DetailedDonor> {
-    const created = await request<Donor>('/donors', {
+    const created = await request<any>('/donors', {
       method: 'POST',
       body: JSON.stringify(dto),
     });
@@ -186,17 +255,17 @@ export const api = {
       id: created.id,
       name: created.name,
       bloodGroup: created.bloodGroup,
-      gender: created.gender,
-      age: created.age,
-      phone: created.phone,
-      email: created.email || '',
-      district: created.district,
-      thana: created.thana,
-      lastDonationDate: created.lastDonationDate || null,
-      totalDonations: created.totalDonations,
-      status: created.status,
-      weightKg: 62,
-      readyForEmergency: true,
+      gender: created.gender || dto.gender || 'Male',
+      age: created.age || dto.age || 25,
+      phone: created.phone || dto.phone,
+      email: created.email || dto.email || '',
+      district: created.district || dto.district,
+      thana: created.thana || dto.thana,
+      lastDonationDate: created.lastDonationDate || dto.lastDonationDate || null,
+      totalDonations: created.totalDonations || 0,
+      status: created.status || 'Eligible',
+      weightKg: created.weightKg || dto.weightKg || 65,
+      readyForEmergency: created.readyForEmergency !== undefined ? created.readyForEmergency : true,
     };
   },
 

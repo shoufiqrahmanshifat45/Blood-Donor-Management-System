@@ -18,19 +18,23 @@ import { useNotification } from '../context/NotificationContext';
 
 interface FindDonorsViewProps {
   initialBloodGroup?: string;
+  initialDistrict?: string;
+  initialThana?: string;
   onBookAppointment?: (donor: DetailedDonor) => void;
   onRequestBlood?: (donor: DetailedDonor) => void;
 }
 
 export const FindDonorsView: React.FC<FindDonorsViewProps> = ({
   initialBloodGroup = 'O+',
+  initialDistrict = 'Dhaka',
+  initialThana = '',
   onBookAppointment,
   onRequestBlood,
 }) => {
   const { info, success } = useNotification();
   const [selectedGroup, setSelectedGroup] = useState<string>(initialBloodGroup || 'O+');
-  const [selectedDistrict, setSelectedDistrict] = useState<string>('Dhaka');
-  const [selectedThana, setSelectedThana] = useState<string>('');
+  const [selectedDistrict, setSelectedDistrict] = useState<string>(initialDistrict || 'Dhaka');
+  const [selectedThana, setSelectedThana] = useState<string>(initialThana || '');
   const [onlyEmergency, setOnlyEmergency] = useState(false);
 
   const [donors, setDonors] = useState<DetailedDonor[]>([]);
@@ -63,6 +67,22 @@ export const FindDonorsView: React.FC<FindDonorsViewProps> = ({
       setLoading(false);
     }
   };
+
+  React.useEffect(() => {
+    if (initialBloodGroup) setSelectedGroup(initialBloodGroup);
+  }, [initialBloodGroup]);
+
+  React.useEffect(() => {
+    if (initialDistrict) setSelectedDistrict(initialDistrict);
+  }, [initialDistrict]);
+
+  React.useEffect(() => {
+    if (initialThana !== undefined) setSelectedThana(initialThana);
+  }, [initialThana]);
+
+  React.useEffect(() => {
+    handleSearch();
+  }, [selectedGroup, selectedDistrict, selectedThana, onlyEmergency]);
 
   const compat = BLOOD_COMPATIBILITY[selectedGroup] || {
     canDonateTo: [],

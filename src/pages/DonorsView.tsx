@@ -17,7 +17,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { api } from '../services/api';
-import { DetailedDonor } from '../data/mockData';
+import { DetailedDonor, BANGLADESH_DISTRICTS, INITIAL_DONORS } from '../data/mockData';
 import { DonorProfileModal } from './DonorProfileModal';
 import { DonorRegistrationModal } from './DonorRegistrationModal';
 
@@ -56,9 +56,14 @@ export const DonorsView: React.FC<DonorsViewProps> = ({
     setLoading(true);
     try {
       const res = await api.searchDonors({});
-      setDonors(res.donors);
-    } catch {
-      setDonors([]);
+      if (res && res.donors && res.donors.length > 0) {
+        setDonors(res.donors);
+      } else {
+        setDonors(INITIAL_DONORS);
+      }
+    } catch (err) {
+      console.warn('⚠️ Could not load donors from API, using fallback data:', err);
+      setDonors(INITIAL_DONORS);
     } finally {
       setLoading(false);
     }
@@ -76,25 +81,28 @@ export const DonorsView: React.FC<DonorsViewProps> = ({
 
   // Filter & Sort Logic
   const filteredDonors = donors.filter((d) => {
+    const s = (search || '').toLowerCase().trim();
     const matchesSearch =
-      !search ||
-      d.name.toLowerCase().includes(search.toLowerCase()) ||
-      d.phone.includes(search) ||
-      d.district.toLowerCase().includes(search.toLowerCase()) ||
-      d.thana.toLowerCase().includes(search.toLowerCase()) ||
-      d.bloodGroup.toLowerCase().includes(search.toLowerCase());
+      !s ||
+      Boolean(d.name && d.name.toLowerCase().includes(s)) ||
+      Boolean(d.phone && d.phone.includes(s)) ||
+      Boolean(d.district && d.district.toLowerCase().includes(s)) ||
+      Boolean(d.thana && d.thana.toLowerCase().includes(s)) ||
+      Boolean(d.bloodGroup && d.bloodGroup.toLowerCase().includes(s));
 
     const matchesBg = selectedBloodGroup === 'ALL' || d.bloodGroup === selectedBloodGroup;
     const matchesStatus = selectedStatus === 'ALL' || d.status === selectedStatus;
-    const matchesDistrict = selectedDistrict === 'ALL' || d.district === selectedDistrict;
+    const matchesDistrict =
+      selectedDistrict === 'ALL' ||
+      (d.district && d.district.toLowerCase() === selectedDistrict.toLowerCase());
 
-    return matchesSearch && matchesBg && matchesStatus && matchesDistrict;
+    return Boolean(matchesSearch && matchesBg && matchesStatus && matchesDistrict);
   });
 
   const sortedDonors = [...filteredDonors].sort((a, b) => {
-    if (sortBy === 'donations') return b.totalDonations - a.totalDonations;
-    if (sortBy === 'name') return a.name.localeCompare(b.name);
-    if (sortBy === 'age') return a.age - b.age;
+    if (sortBy === 'donations') return (b.totalDonations || 0) - (a.totalDonations || 0);
+    if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+    if (sortBy === 'age') return (a.age || 0) - (b.age || 0);
     return 0;
   });
 
@@ -113,7 +121,7 @@ export const DonorsView: React.FC<DonorsViewProps> = ({
 
   // Metrics summary
   const totalEligible = donors.filter((d) => d.status === 'Eligible').length;
-  const totalEmergency = donors.filter((d) => d.readyForEmergency).length;
+  const totalEmergency = donors.filter((d) => Boolean(d.readyForEmergency)).length;
 
   return (
     <div className="space-y-4">
@@ -182,6 +190,23 @@ export const DonorsView: React.FC<DonorsViewProps> = ({
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
+            {/* District Select */}
+            <select
+              value={selectedDistrict}
+              onChange={(e) => {
+                setSelectedDistrict(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-xs text-slate-700 dark:text-slate-200 focus:outline-none font-medium"
+            >
+              <option value="ALL">All Districts</option>
+              {BANGLADESH_DISTRICTS.map((dist) => (
+                <option key={dist} value={dist}>
+                  {dist}
+                </option>
+              ))}
+            </select>
+
             {/* Status Select */}
             <select
               value={selectedStatus}
@@ -209,7 +234,7 @@ export const DonorsView: React.FC<DonorsViewProps> = ({
             </select>
 
             {/* Clear Button */}
-            {(search || selectedBloodGroup !== 'ALL' || selectedStatus !== 'ALL') && (
+            {(search || selectedBloodGroup !== 'ALL' || selectedStatus !== 'ALL' || selectedDistrict !== 'ALL') && (
               <button
                 onClick={resetFilters}
                 className="p-2 text-slate-500 hover:text-slate-800 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
@@ -304,7 +329,7 @@ export const DonorsView: React.FC<DonorsViewProps> = ({
                           {d.name}
                         </div>
                         <div className="text-[10.5px] text-slate-400 mt-0.5">
-                          {d.id} • {d.gender}, {d.age} yrs
+                          {d.id?.startsWith('DNR-') ? d.id : `DNR-${d.id?.slice(0, 8).toUpperCase()}`} • {d.gender}, {d.age} yrs
                         </div>
                       </td>
 
@@ -313,7 +338,7 @@ export const DonorsView: React.FC<DonorsViewProps> = ({
                         <div className="flex items-center gap-1.5">
                           <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span className="font-medium text-slate-800 dark:text-slate-200">
-                            {d.thana}, {d.district}
+                            {d.thana ? `${d.thana}, ` : ''}{d.district}
                           </span>
                         </div>
                       </td>
@@ -321,7 +346,9 @@ export const DonorsView: React.FC<DonorsViewProps> = ({
                       {/* Contact */}
                       <td className="py-3 px-4">
                         <div className="font-medium">{d.phone}</div>
-                        <div className="text-[10px] text-slate-400 truncate max-w-[140px]">{d.email}</div>
+                        <div className="text-[10px] text-slate-400 truncate max-w-[140px]">
+                          {d.email || 'No email provided'}
+                        </div>
                       </td>
 
                       {/* Donations count */}

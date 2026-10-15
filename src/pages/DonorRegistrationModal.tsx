@@ -51,6 +51,10 @@ export const DonorRegistrationModal: React.FC<DonorRegistrationModalProps> = ({
     } else if (!/^(\+?880|0)1[3-9]\d{8}$/.test(cleanPhone.replace(/[\s-]/g, ''))) {
       newErrors.phone = 'Enter a valid Bangladeshi phone number (e.g. +880 1711-234567 or 01711234567)';
     }
+    const cleanEmail = email.trim();
+    if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      newErrors.email = 'Enter a valid email address';
+    }
     const weightNum = parseFloat(weightKg);
     if (!weightKg || isNaN(weightNum) || weightNum < 45) {
       newErrors.weightKg = 'Minimum donor weight is 45 kg (99 lbs)';
@@ -66,6 +70,7 @@ export const DonorRegistrationModal: React.FC<DonorRegistrationModalProps> = ({
 
     setIsSubmitting(true);
     try {
+      const weightNum = parseFloat(weightKg);
       await api.createDonor({
         name: name.trim(),
         bloodGroup,
@@ -75,6 +80,8 @@ export const DonorRegistrationModal: React.FC<DonorRegistrationModalProps> = ({
         email: email.trim() || undefined,
         district,
         thana,
+        weightKg: !isNaN(weightNum) ? weightNum : 65,
+        readyForEmergency,
         lastDonationDate: lastDonationDate || undefined,
       });
 

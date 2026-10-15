@@ -52,6 +52,11 @@ const DashboardContent: React.FC = () => {
   const [isRegisterDonorOpen, setIsRegisterDonorOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchBloodParams, setSearchBloodParams] = useState<{
+    bloodGroup: string;
+    district: string;
+    thana: string;
+  }>({ bloodGroup: 'O+', district: 'Dhaka', thana: '' });
 
   const { data, loading, error, refresh } = useDashboardData();
   const { info, success } = useNotification();
@@ -76,6 +81,7 @@ const DashboardContent: React.FC = () => {
 
   const handleSearchBlood = async (bloodGroup: string, district: string, thana: string) => {
     setIsSearching(true);
+    setSearchBloodParams({ bloodGroup, district, thana });
     try {
       const result = await api.searchDonors({ bloodGroup, district, thana });
       const queryParts = [bloodGroup, district, thana].filter(Boolean).join(' • ');
@@ -84,8 +90,6 @@ const DashboardContent: React.FC = () => {
           'Donors Located',
           `Found ${result.donors.length} matching donors for ${queryParts || 'all areas'}. Navigating to directory...`
         );
-        // Navigate to Find Donors view with results
-        setCurrentTab('search-blood-group');
       } else {
         info(
           'Search Completed',
@@ -94,6 +98,7 @@ const DashboardContent: React.FC = () => {
             : 'Please specify criteria to filter donors.'
         );
       }
+      setCurrentTab('search-blood-group');
     } finally {
       setIsSearching(false);
     }
@@ -275,7 +280,15 @@ const DashboardContent: React.FC = () => {
       case 'reports':
         return <ReportsView />;
       case 'search-blood-group':
-        return <FindDonorsView initialBloodGroup="" />;
+        return (
+          <FindDonorsView
+            initialBloodGroup={searchBloodParams.bloodGroup}
+            initialDistrict={searchBloodParams.district}
+            initialThana={searchBloodParams.thana}
+            onBookAppointment={() => setCurrentTab('appointments')}
+            onRequestBlood={() => setCurrentTab('blood-requests')}
+          />
+        );
       case 'bmi-calculator':
         return <ToolsView defaultTab="bmi" onNavigateTab={(tab) => setCurrentTab(tab)} />;
       case 'eligibility':

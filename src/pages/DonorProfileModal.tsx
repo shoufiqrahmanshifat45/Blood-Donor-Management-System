@@ -39,11 +39,11 @@ export const DonorProfileModal: React.FC<DonorProfileModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-red-100 mt-1 flex items-center gap-2">
-                <span>Donor ID: {donor.id}</span>
+                <span>Donor ID: {donor.id?.startsWith('DNR-') ? donor.id : `DNR-${donor.id?.slice(0, 8).toUpperCase()}`}</span>
                 <span>•</span>
                 <span>{donor.gender}, {donor.age} yrs</span>
                 <span>•</span>
-                <span>{donor.weightKg} kg</span>
+                <span>{donor.weightKg ? `${donor.weightKg} kg` : 'Standard'}</span>
               </p>
             </div>
           </div>
@@ -96,14 +96,18 @@ export const DonorProfileModal: React.FC<DonorProfileModalProps> = ({
               </div>
               <div className="flex items-center gap-2.5 text-slate-700 dark:text-slate-200">
                 <Mail className="w-4 h-4 text-blue-500 shrink-0" />
-                <a href={`mailto:${donor.email}`} className="hover:underline truncate">
-                  {donor.email}
-                </a>
+                {donor.email ? (
+                  <a href={`mailto:${donor.email}`} className="hover:underline truncate">
+                    {donor.email}
+                  </a>
+                ) : (
+                  <span className="text-slate-400">No email registered</span>
+                )}
               </div>
               <div className="flex items-center gap-2.5 text-slate-700 dark:text-slate-200 sm:col-span-2">
                 <MapPin className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span>
-                  {donor.thana}, {donor.district}, Bangladesh
+                  {donor.thana ? `${donor.thana}, ` : ''}{donor.district || 'Dhaka'}, Bangladesh
                 </span>
               </div>
             </div>
@@ -128,7 +132,7 @@ export const DonorProfileModal: React.FC<DonorProfileModalProps> = ({
                 ✓ Age Qualified ({donor.age} yrs)
               </span>
               <span className="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/40">
-                ✓ Weight Qualified ({donor.weightKg} kg)
+                ✓ Weight Qualified ({donor.weightKg ? `${donor.weightKg} kg` : 'Standard'})
               </span>
             </div>
           </div>

@@ -125,7 +125,10 @@ export interface CreateDonorDto {
   email?: string;
   district: string;
   thana: string;
+  address?: string;
+  weightKg?: number;
   lastDonationDate?: string;
+  readyForEmergency?: boolean;
 }
 
 export interface CreateBloodRequestDto {
