@@ -14,9 +14,9 @@ import {
 const router = Router();
 const controller = new DonorsController();
 
-// Public donor search and directory
-router.get('/', validate({ query: searchDonorsQuerySchema }), controller.searchDonors);
-router.get('/:id', validate({ params: idParamSchema }), controller.getDonorById);
+// Donor search and profile directory (applies optional authentication to redact private information for unauthenticated users)
+router.get('/', optionalAuthenticate, validate({ query: searchDonorsQuerySchema }), controller.searchDonors);
+router.get('/:id', optionalAuthenticate, validate({ params: idParamSchema }), controller.getDonorById);
 
 // Donor creation (accessible to guests, or linked to authenticated user)
 router.post('/', optionalAuthenticate, validate({ body: createDonorSchema }), controller.createDonor);

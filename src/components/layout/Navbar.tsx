@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, Search, Bell, X, Clock } from 'lucide-react';
+import { Menu, Search, Bell, X, Clock, LogIn } from 'lucide-react';
 import { useAdminPhoto } from '../../utils/avatarStorage';
 import { ThemeToggle } from '../common/ThemeToggle';
+import { useAuth } from '../../context/AuthContext';
 
 interface NavbarProps {
   onMenuToggle?: () => void;
@@ -19,6 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSearchSubmit,
 }) => {
   const { photo: adminPhoto } = useAdminPhoto();
+  const { user, isAuthenticated } = useAuth();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -159,27 +161,41 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
         </div>
 
-        {/* User Profile */}
-        <button
-          onClick={onProfileClick}
-          className="flex items-center gap-2.5 cursor-pointer hover:opacity-95 transition-opacity text-left bg-transparent border-none p-0 focus:outline-none focus:ring-2 focus:ring-red-500/20 rounded-full"
-          title="Open User Profile & Authentication"
-          aria-label="User Profile"
-        >
-          <div className="user-avatar-ring w-10 h-10 rounded-full ring-2 ring-slate-200 dark:ring-slate-700 overflow-hidden bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-xs">
-            <img
-              src={adminPhoto}
-              alt="Shoufiq Rahman Shifat"
-              className="w-full h-full object-cover object-center"
-            />
-          </div>
-          <div className="hidden sm:block text-left">
-            <p className="text-[13px] font-bold text-[#0f172a] dark:text-white leading-tight">
-              Shoufiq Rahman Shifat
-            </p>
-            <p className="text-[11px] text-slate-400 font-medium leading-none mt-0.5">Admin</p>
-          </div>
-        </button>
+        {/* User Profile or Sign-In Button */}
+        {isAuthenticated && user ? (
+          <button
+            onClick={onProfileClick}
+            className="flex items-center gap-2.5 cursor-pointer hover:opacity-95 transition-opacity text-left bg-transparent border-none p-0 focus:outline-none focus:ring-2 focus:ring-red-500/20 rounded-full"
+            title="Open User Profile & Account Settings"
+            aria-label="User Profile"
+          >
+            <div className="user-avatar-ring w-10 h-10 rounded-full ring-2 ring-slate-200 dark:ring-slate-700 overflow-hidden bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-xs">
+              <img
+                src={user.avatarUrl || adminPhoto}
+                alt={user.name}
+                className="w-full h-full object-cover object-center"
+              />
+            </div>
+            <div className="hidden sm:block text-left">
+              <p className="text-[13px] font-bold text-[#0f172a] dark:text-white leading-tight">
+                {user.name}
+              </p>
+              <p className="text-[11px] text-slate-400 font-medium leading-none mt-0.5 capitalize">
+                {user.role.toLowerCase().replace('_', ' ')}
+              </p>
+            </div>
+          </button>
+        ) : (
+          <button
+            onClick={onProfileClick}
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white text-xs font-semibold shadow-xs hover:shadow-md transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-500/30"
+            title="Sign In or Register"
+            aria-label="Sign In"
+          >
+            <LogIn className="w-3.5 h-3.5" />
+            <span>Sign In</span>
+          </button>
+        )}
       </div>
     </header>
   );

@@ -221,6 +221,14 @@ export const ToolsView: React.FC<ToolsViewProps> = ({
         </div>
       </div>
 
+      {/* Informational Medical Disclaimer Banner */}
+      <div className="flex items-start gap-3 p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-800 dark:text-amber-200">
+        <ShieldAlert className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+        <div className="text-xs leading-relaxed">
+          <span className="font-bold">Medical & Informational Disclaimer:</span> Blood donation eligibility guidelines, BMI estimations, and compatibility charts provided on this platform are strictly informational and do not constitute professional medical advice, diagnosis, or guarantees of clinical eligibility. Final donor eligibility and compatibility must always be confirmed by qualified healthcare professionals or an authorized blood transfusion service.
+        </div>
+      </div>
+
       {/* Sub-View 1: Search Blood Group */}
       {activeSubTab === 'search' && (
         <div className="space-y-4">

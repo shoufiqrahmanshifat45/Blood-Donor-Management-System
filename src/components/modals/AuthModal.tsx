@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useAdminPhoto } from '../../utils/avatarStorage';
 import { useNotification } from '../../context/NotificationContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -29,19 +30,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   initialMode = 'profile',
 }) => {
   const { photo: adminPhoto } = useAdminPhoto();
-  const [mode, setMode] = useState<'profile' | 'login' | 'register'>(initialMode);
+  const { user, isAuthenticated, login, register, logout } = useAuth();
+  const [mode, setMode] = useState<'profile' | 'login' | 'register'>(
+    !isAuthenticated && initialMode === 'profile' ? 'login' : initialMode
+  );
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Current logged in user (locked to Shoufiq Rahman Shifat)
-  const [currentUser, setCurrentUser] = useState({
-    name: 'Shoufiq Rahman Shifat',
-    email: 'shoufiq.shifat@bdms.org',
-    role: 'Admin & System Coordinator',
-    phone: '+880 1711-892451',
-    bloodGroup: 'B+',
-    totalDonations: 14,
-    lastDonated: '3 months ago',
-  });
+  // Sync mode if user authentication state changes
+  React.useEffect(() => {
+    if (!isAuthenticated && mode === 'profile') {
+      setMode('login');
+    }
+  }, [isAuthenticated, mode]);
 
   // Login form state
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
@@ -51,8 +52,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [registerForm, setRegisterForm] = useState({
     name: '',
     email: '',
-    phone: '',
     bloodGroup: 'O+',
+    phone: '',
+    role: 'DONOR',
     password: '',
     confirmPassword: '',
   });
@@ -62,7 +64,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errors: Record<string, string> = {};
     if (!loginForm.email.trim()) errors.email = 'Email address is required';
@@ -74,16 +76,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
 
     setLoginErrors({});
-    success('Logged In Successfully', `Welcome back, ${currentUser.name}!`);
-    setMode('profile');
+    setIsSubmitting(true);
+    try {
+      await login(loginForm.email.trim(), loginForm.password);
+      success('Logged In Successfully', 'Secure session established.');
+      setMode('profile');
+      onClose();
+    } catch (err) {
+      notifyError('Login Failed', (err as Error).message || 'Invalid email or password.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const errors: Record<string, string> = {};
     if (!registerForm.name.trim()) errors.name = 'Full name is required';
     if (!registerForm.email.trim()) errors.email = 'Email address is required';
-    if (!registerForm.phone.trim()) errors.phone = 'Phone number is required';
     if (!registerForm.password || registerForm.password.length < 6) {
       errors.password = 'Password must be at least 6 characters';
     }
@@ -97,8 +107,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
 
     setRegisterErrors({});
-    success('Account Registered', 'New coordinator account created successfully!');
-    setMode('profile');
+    setIsSubmitting(true);
+    try {
+      await register({
+        name: registerForm.name.trim(),
+        email: registerForm.email.trim(),
+        phone: registerForm.phone.trim() || undefined,
+        role: registerForm.role,
+        password: registerForm.password,
+      });
+      success('Account Registered', 'Welcome to Blood Donor Management System!');
+      setMode('profile');
+      onClose();
+    } catch (err) {
+      notifyError('Registration Failed', (err as Error).message || 'Unable to register account.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await logout();
+      success('Signed Out', 'You have been safely logged out.');
+      setMode('login');
+    } catch (err) {
+      notifyError('Sign Out Error', (err as Error).message);
+    }
   };
 
   return (
@@ -134,16 +169,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Tab Selection (Profile / Login / Register) */}
         <div className="flex border-b border-slate-100 dark:border-slate-800 px-4 pt-2 bg-slate-50/50 dark:bg-[#101b33]/40">
-          <button
-            onClick={() => setMode('profile')}
-            className={`pb-2 px-3 text-xs font-bold border-b-2 transition-all ${
-              mode === 'profile'
-                ? 'border-[#ef4444] text-[#ef4444]'
-                : 'border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-            }`}
-          >
-            Profile
-          </button>
+          {isAuthenticated && (
+            <button
+              onClick={() => setMode('profile')}
+              className={`pb-2 px-3 text-xs font-bold border-b-2 transition-all ${
+                mode === 'profile'
+                  ? 'border-[#ef4444] text-[#ef4444]'
+                  : 'border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+              }`}
+            >
+              Profile
+            </button>
+          )}
           <button
             onClick={() => setMode('login')}
             className={`pb-2 px-3 text-xs font-bold border-b-2 transition-all ${
@@ -169,14 +206,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* Body Content */}
         <div className="p-5 overflow-y-auto">
           {/* View 1: Active User Profile */}
-          {mode === 'profile' && (
+          {mode === 'profile' && user && (
             <div className="space-y-4">
               <div className="flex flex-col items-center text-center space-y-2">
                 <div className="relative">
                   <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-red-500/20 shadow-md">
                     <img
-                      src={adminPhoto}
-                      alt={currentUser.name}
+                      src={user.avatarUrl || adminPhoto}
+                      alt={user.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -187,12 +224,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                 <div>
                   <h4 className="text-base font-bold text-slate-900 dark:text-white">
-                    {currentUser.name}
+                    {user.name}
                   </h4>
-                  <p className="text-xs font-semibold text-red-600 dark:text-red-400">
-                    {currentUser.role}
+                  <p className="text-xs font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider">
+                    {user.role}
                   </p>
-                  <p className="text-xs text-slate-400 mt-0.5">{currentUser.email}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{user.email}</p>
                 </div>
               </div>
 
@@ -201,13 +238,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <div>
                   <p className="text-[11px] text-slate-400">Blood Group</p>
                   <p className="text-base font-extrabold text-red-600 dark:text-red-400 flex items-center justify-center gap-1">
-                    <Droplet className="w-3.5 h-3.5" /> {currentUser.bloodGroup}
+                    <Droplet className="w-3.5 h-3.5" /> {user.donorProfile?.bloodGroup || 'Not linked'}
                   </p>
                 </div>
                 <div>
                   <p className="text-[11px] text-slate-400">Lifetime Donations</p>
                   <p className="text-base font-bold text-slate-900 dark:text-white">
-                    {currentUser.totalDonations} Times
+                    {user.donorProfile ? `${user.donorProfile.totalDonations} Times` : '0 Times'}
                   </p>
                 </div>
               </div>
@@ -219,16 +256,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <Phone className="w-3.5 h-3.5" /> Phone:
                   </span>
                   <span className="font-medium text-slate-800 dark:text-slate-200">
-                    {currentUser.phone}
+                    {user.phone || 'No phone registered'}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50/70 dark:bg-[#131d33]/60">
                   <span className="text-slate-400 flex items-center gap-2">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Account Security:
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Account Status:
                   </span>
                   <span className="font-semibold text-emerald-600">
-                    2FA Verified Admin
+                    Active & Authenticated
                   </span>
                 </div>
               </div>
@@ -238,19 +275,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <button
                   type="button"
                   onClick={() => {
-                    success('Session Maintained', 'Already signed in as Shoufiq Rahman Shifat.');
+                    success('Session Active', `Authenticated securely as ${user.name}`);
                   }}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-medium transition-colors"
                 >
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> System Active
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Session Active
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setMode('login')}
+                  onClick={handleSignOut}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl text-xs font-semibold transition-colors"
                 >
-                  <LogOut className="w-3.5 h-3.5" /> Switch Account
+                  <LogOut className="w-3.5 h-3.5" /> Sign Out
                 </button>
               </div>
             </div>

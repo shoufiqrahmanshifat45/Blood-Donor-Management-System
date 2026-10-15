@@ -248,6 +248,14 @@ export const FindDonorsView: React.FC<FindDonorsViewProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Informational Medical Disclaimer */}
+        <div className="w-full pt-3 mt-1 border-t border-slate-200/60 dark:border-slate-800/80 text-[11px] text-slate-500 dark:text-slate-400 flex items-start gap-2">
+          <ShieldCheck className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+          <span>
+            <strong>Informational Notice:</strong> Blood compatibility and donor availability are provided for general educational and logistical guidance only and do not constitute clinical or medical advice. Biological compatibility and final donor eligibility must always be confirmed through lab cross-matching with qualified healthcare professionals or blood transfusion services.
+          </span>
+        </div>
       </div>
 
       {/* Results Section */}

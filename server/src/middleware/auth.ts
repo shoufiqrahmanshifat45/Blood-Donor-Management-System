@@ -6,6 +6,8 @@ import { prisma } from '../db/prisma.js';
 import { UnauthorizedError, ForbiddenError } from '../utils/errors.js';
 import { AuthenticatedUser } from '../types/express.js';
 
+import { AUTH_COOKIE_NAME } from '../utils/cookies.js';
+
 interface JwtPayload {
   userId: string;
   email: string;
@@ -13,18 +15,34 @@ interface JwtPayload {
 }
 
 /**
- * Middleware ensuring a valid JWT is present in Authorization Bearer header
+ * Helper to extract token from either Authorization Bearer header or HttpOnly cookie
+ */
+function extractToken(req: Request): string | null {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const headerToken = authHeader.split(' ')[1];
+    if (headerToken && headerToken.trim()) return headerToken.trim();
+  }
+
+  // Check HttpOnly session cookie (parsed or signed)
+  if (req.cookies && req.cookies[AUTH_COOKIE_NAME]) {
+    return req.cookies[AUTH_COOKIE_NAME];
+  }
+  if (req.signedCookies && req.signedCookies[AUTH_COOKIE_NAME]) {
+    return req.signedCookies[AUTH_COOKIE_NAME];
+  }
+
+  return null;
+}
+
+/**
+ * Middleware ensuring a valid JWT is present via Authorization Bearer header or HttpOnly cookie
  */
 export async function authenticate(req: Request, res: Response, next: NextFunction) {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedError('Authentication token missing. Please log in.');
-    }
-
-    const token = authHeader.split(' ')[1];
+    const token = extractToken(req);
     if (!token) {
-      throw new UnauthorizedError('Malformed authorization header.');
+      throw new UnauthorizedError('Authentication required. Missing authorization token or session cookie. Please log in.');
     }
 
     const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
@@ -63,26 +81,24 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
 }
 
 /**
- * Optional authentication middleware for endpoints accessible to both guests and logged-in users
+ * Optional authentication middleware for endpoints accessible to both guests and logged-in users.
+ * Silently attaches req.user if a valid token or cookie exists.
  */
 export async function optionalAuthenticate(req: Request, res: Response, next: NextFunction) {
   try {
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.split(' ')[1];
-      if (token) {
-        try {
-          const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
-          const user = await prisma.user.findUnique({
-            where: { id: decoded.userId },
-            select: { id: true, email: true, name: true, role: true, isActive: true },
-          });
-          if (user && user.isActive) {
-            req.user = user;
-          }
-        } catch {
-          // Token invalid or expired: proceed as anonymous guest
+    const token = extractToken(req);
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+        const user = await prisma.user.findUnique({
+          where: { id: decoded.userId },
+          select: { id: true, email: true, name: true, role: true, isActive: true },
+        });
+        if (user && user.isActive) {
+          req.user = user;
         }
+      } catch {
+        // Token invalid or expired: proceed as anonymous guest
       }
     }
     next();

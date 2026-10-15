@@ -44,6 +44,10 @@ describe('Authentication & User Management Endpoints', () => {
     assert.equal((res.body.data.user as any).password, undefined);
     assert.equal((res.body.data.user as any).passwordHash, undefined);
 
+    // Cookie Verification: HttpOnly bdms_token cookie set
+    const cookies = res.headers['set-cookie'] || [];
+    assert.ok(cookies.some((c: string) => c.includes('bdms_token=') && c.includes('HttpOnly')));
+
     registeredToken = res.body.data.token;
   });
 
@@ -70,6 +74,10 @@ describe('Authentication & User Management Endpoints', () => {
     assert.ok(res.body.data.token);
     assert.equal(res.body.data.user.email, testUser.email.toLowerCase());
     assert.equal((res.body.data.user as any).password, undefined);
+
+    // Cookie Verification: HttpOnly bdms_token cookie set on login
+    const cookies = res.headers['set-cookie'] || [];
+    assert.ok(cookies.some((c: string) => c.includes('bdms_token=') && c.includes('HttpOnly')));
   });
 
   test('POST /api/auth/login fails with 401 on incorrect password', async () => {
@@ -102,6 +110,17 @@ describe('Authentication & User Management Endpoints', () => {
     assert.equal((res.body.data as any).password, undefined);
   });
 
+  test('GET /api/auth/me succeeds via HttpOnly Cookie (no Authorization header)', async () => {
+    const res = await request(app)
+      .get('/api/auth/me')
+      .set('Cookie', `bdms_token=${registeredToken}`);
+
+    assert.equal(res.status, 200);
+    assert.equal(res.body.success, true);
+    assert.equal(res.body.data.email, testUser.email.toLowerCase());
+    assert.equal((res.body.data as any).password, undefined);
+  });
+
   test('PATCH /api/auth/profile updates profile fields', async () => {
     const res = await request(app)
       .patch('/api/auth/profile')
@@ -115,9 +134,14 @@ describe('Authentication & User Management Endpoints', () => {
     assert.equal(res.body.data.name, 'Updated Name');
   });
 
-  test('POST /api/auth/logout succeeds', async () => {
+  test('POST /api/auth/logout succeeds and clears the bdms_token cookie', async () => {
     const res = await request(app).post('/api/auth/logout');
     assert.equal(res.status, 200);
     assert.equal(res.body.success, true);
+
+    const cookies = res.headers['set-cookie'] || [];
+    assert.ok(
+      cookies.some((c: string) => c.includes('bdms_token=') && (c.includes('Expires=Thu, 01 Jan 1970') || c.includes('Max-Age=0')))
+    );
   });
 });

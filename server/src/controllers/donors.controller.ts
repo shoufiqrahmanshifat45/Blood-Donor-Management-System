@@ -6,7 +6,7 @@ const donorsService = new DonorsService();
 export class DonorsController {
   async searchDonors(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await donorsService.searchDonors(req.query as any);
+      const result = await donorsService.searchDonors(req.query as any, req.user);
       res.status(200).json({
         success: true,
         data: result.donors,
@@ -19,7 +19,7 @@ export class DonorsController {
 
   async getDonorById(req: Request, res: Response, next: NextFunction) {
     try {
-      const donor = await donorsService.getDonorById(req.params.id);
+      const donor = await donorsService.getDonorById(req.params.id, req.user);
       res.status(200).json({
         success: true,
         data: donor,

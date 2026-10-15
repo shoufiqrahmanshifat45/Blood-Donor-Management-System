@@ -59,13 +59,19 @@ const FALLBACK_DASHBOARD: DashboardSummaryData = {
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${BASE_URL}${endpoint}`;
+  const token = typeof window !== 'undefined' ? localStorage.getItem('bdms_token') : null;
   const headers = {
     'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers || {}),
   };
 
   try {
-    const response = await fetch(url, { ...options, headers });
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      credentials: 'include', // Automatically sends and receives HttpOnly session cookies
+    });
     if (!response.ok) {
       const errorBody = await response.json().catch(() => ({}));
       throw new Error(
@@ -360,6 +366,78 @@ export const api = {
     await request(`/appointments/${id}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
+    });
+  },
+
+  /**
+   * Register a new user account with secure password hashing and HttpOnly session cookie
+   */
+  async register(data: { name: string; email: string; password: string; phone?: string; role?: string }): Promise<{ user: any; token: string }> {
+    const result = await request<{ user: any; token: string }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (result && result.token && typeof window !== 'undefined') {
+      localStorage.setItem('bdms_token', result.token);
+    }
+    return result;
+  },
+
+  /**
+   * Login with email and password, establishing HttpOnly session cookie
+   */
+  async login(data: { email: string; password: string }): Promise<{ user: any; token: string }> {
+    const result = await request<{ user: any; token: string }>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (result && result.token && typeof window !== 'undefined') {
+      localStorage.setItem('bdms_token', result.token);
+    }
+    return result;
+  },
+
+  /**
+   * Logout user, clearing server session cookie and local token
+   */
+  async logout(): Promise<void> {
+    try {
+      await request('/auth/logout', { method: 'POST' });
+    } finally {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('bdms_token');
+      }
+    }
+  },
+
+  /**
+   * Retrieve current authenticated user profile
+   */
+  async getCurrentUser(): Promise<any | null> {
+    try {
+      return await request<any>('/auth/me');
+    } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Update profile fields (name, phone, avatarUrl)
+   */
+  async updateProfile(data: { name?: string; phone?: string; avatarUrl?: string }): Promise<any> {
+    return await request<any>('/auth/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Change password securely
+   */
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    return await request<{ message: string }>('/auth/change-password', {
+      method: 'PATCH',
+      body: JSON.stringify({ currentPassword, newPassword }),
     });
   },
 };

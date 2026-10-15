@@ -12,6 +12,7 @@ import donorsRoutes from './routes/donors.routes.js';
 import bloodRequestsRoutes from './routes/bloodRequests.routes.js';
 import donationsRoutes from './routes/donations.routes.js';
 import appointmentsRoutes from './routes/appointments.routes.js';
+import cookieParser from 'cookie-parser';
 import bloodStockRoutes from './routes/bloodStock.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import notificationsRoutes from './routes/notifications.routes.js';
@@ -27,10 +28,10 @@ app.use(
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps, curl, or server-to-server)
       if (!origin) return callback(null, true);
-      if (env.CORS_ORIGINS.includes(origin) || !env.IS_PRODUCTION) {
+      if (!env.IS_PRODUCTION || env.CORS_ORIGINS.includes(origin)) {
         return callback(null, true);
       }
-      return callback(null, true);
+      return callback(new Error(`Origin ${origin} is not allowed by CORS policy.`));
     },
     credentials: true,
   })
@@ -39,6 +40,9 @@ app.use(
 // Sensible request-size limit (10mb)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Parse signed and standard cookies for session authentication
+app.use(cookieParser(env.JWT_SECRET));
 
 // Request logging
 app.use(requestLogger);

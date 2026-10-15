@@ -13,6 +13,7 @@ import { BloodGroupSearch } from './components/dashboard/BloodGroupSearch';
 import { ActionModals } from './components/modals/ActionModals';
 import { NotificationProvider, useNotification } from './context/NotificationContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { AuthProvider } from './context/AuthContext';
 import { RealTimeClock } from './components/common/RealTimeClock';
 import { useDashboardData } from './hooks/useDashboardData';
 import {
@@ -389,7 +390,9 @@ export const App: React.FC = () => {
   return (
     <ThemeProvider>
       <NotificationProvider>
-        <DashboardContent />
+        <AuthProvider>
+          <DashboardContent />
+        </AuthProvider>
       </NotificationProvider>
     </ThemeProvider>
   );

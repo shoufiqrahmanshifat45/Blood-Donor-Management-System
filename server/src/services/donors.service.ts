@@ -17,17 +17,22 @@ import {
 } from '../utils/errors.js';
 import { AuthenticatedUser } from '../types/express.js';
 
+import { maskEmail } from '../utils/privacy.js';
+
 export class DonorsService {
-  async searchDonors(query: {
-    bloodGroup?: string;
-    district?: string;
-    thana?: string;
-    search?: string;
-    status?: string;
-    isAvailable?: boolean;
-    page?: number;
-    limit?: number;
-  }) {
+  async searchDonors(
+    query: {
+      bloodGroup?: string;
+      district?: string;
+      thana?: string;
+      search?: string;
+      status?: string;
+      isAvailable?: boolean;
+      page?: number;
+      limit?: number;
+    },
+    currentUser?: AuthenticatedUser
+  ) {
     const isDbConnected = await checkDatabaseConnection();
     if (!isDbConnected) {
       throw new ServiceUnavailableError('Database service unavailable.');
@@ -92,16 +97,20 @@ export class DonorsService {
       prisma.donor.count({ where }),
     ]);
 
+    const isPrivileged =
+      currentUser &&
+      [Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.HOSPITAL_COORDINATOR].includes(currentUser.role);
+
     return {
       donors: donors.map((d) => ({
         id: d.id,
-        userId: d.userId,
+        userId: isPrivileged ? d.userId : null,
         name: d.name,
         bloodGroup: fromPrismaBloodGroup(d.bloodGroup),
         gender: fromPrismaGender(d.gender),
         age: d.age,
         phone: d.phone,
-        email: d.email,
+        email: isPrivileged ? d.email : maskEmail(d.email),
         district: d.district,
         thana: d.thana,
         lastDonationDate: d.lastDonationDate ? d.lastDonationDate.toISOString() : null,
@@ -122,7 +131,7 @@ export class DonorsService {
     };
   }
 
-  async getDonorById(id: string) {
+  async getDonorById(id: string, currentUser?: AuthenticatedUser) {
     const isDbConnected = await checkDatabaseConnection();
     if (!isDbConnected) {
       throw new ServiceUnavailableError('Database service unavailable.');
@@ -160,18 +169,25 @@ export class DonorsService {
       throw new NotFoundError(`Donor with ID ${id} not found.`);
     }
 
+    const isPrivileged =
+      currentUser &&
+      [Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.HOSPITAL_COORDINATOR].includes(currentUser.role);
+    const isOwner = Boolean(currentUser && d.userId && d.userId === currentUser.id);
+    const isAuthorized = Boolean(isPrivileged || isOwner);
+
     return {
       id: d.id,
-      userId: d.userId,
+      userId: isAuthorized ? d.userId : null,
       name: d.name,
       bloodGroup: fromPrismaBloodGroup(d.bloodGroup),
       gender: fromPrismaGender(d.gender),
       age: d.age,
       phone: d.phone,
-      email: d.email,
+      email: isAuthorized ? d.email : maskEmail(d.email),
       district: d.district,
       thana: d.thana,
-      address: d.address,
+      // PRIVACY PROTECTION: Home address only visible to authorized personnel or owner
+      address: isAuthorized ? d.address : null,
       lastDonationDate: d.lastDonationDate ? d.lastDonationDate.toISOString() : null,
       totalDonations: d.totalDonations,
       status: fromPrismaDonorStatus(d.status),
@@ -179,16 +195,20 @@ export class DonorsService {
       readyForEmergency: d.readyForEmergency,
       weightKg: d.weightKg,
       nextEligibleDate: d.nextEligibleDate ? d.nextEligibleDate.toISOString() : null,
-      ineligibilityReason: d.ineligibilityReason,
+      // PRIVACY PROTECTION: Private medical ineligibility details redacted for public view
+      ineligibilityReason: isAuthorized ? d.ineligibilityReason : null,
       donations: d.donations.map((dn) => ({
         ...dn,
         bloodGroup: fromPrismaBloodGroup(dn.bloodGroup),
         donationDate: dn.donationDate.toISOString(),
       })),
-      appointments: d.appointments.map((a) => ({
-        ...a,
-        appointmentDate: a.appointmentDate.toISOString().split('T')[0],
-      })),
+      // PRIVACY PROTECTION: Appointment schedule history only visible to authorized personnel or owner
+      appointments: isAuthorized
+        ? d.appointments.map((a) => ({
+            ...a,
+            appointmentDate: a.appointmentDate.toISOString().split('T')[0],
+          }))
+        : [],
       createdAt: d.createdAt.toISOString(),
       updatedAt: d.updatedAt.toISOString(),
     };

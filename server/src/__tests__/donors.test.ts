@@ -50,8 +50,10 @@ describe('Donors Directory & Management Endpoints', () => {
         gender: 'Male',
         age: 26,
         phone: uniquePhone,
+        email: 'farhan.kabir@example.com',
         district: 'Dhaka',
         thana: 'Mirpur',
+        address: 'House 42, Road 9, Mirpur-10',
         isAvailable: true,
       });
 
@@ -64,13 +66,32 @@ describe('Donors Directory & Management Endpoints', () => {
     createdDonorId = res.body.data.id;
   });
 
-  test('GET /api/donors/:id retrieves specific donor profile', async () => {
+  test('GET /api/donors/:id redacts private donor data for unauthenticated public requests', async () => {
     const res = await request(app).get(`/api/donors/${createdDonorId}`);
     assert.equal(res.status, 200);
     assert.equal(res.body.success, true);
     assert.equal(res.body.data.id, createdDonorId);
     assert.equal(res.body.data.name, 'Farhan Kabir');
+    // PRIVACY VERIFICATION: Private address & user linkage are redacted for public
+    assert.equal(res.body.data.address, null);
+    assert.equal(res.body.data.userId, null);
+    assert.equal(res.body.data.ineligibilityReason, null);
+    // Email must be masked
+    assert.ok(res.body.data.email.includes('***'));
     assert.ok(Array.isArray(res.body.data.donations));
+  });
+
+  test('GET /api/donors/:id exposes full private data for authorized Admin requests', async () => {
+    const adminToken = await getAdminToken();
+    const res = await request(app)
+      .get(`/api/donors/${createdDonorId}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    assert.equal(res.status, 200);
+    assert.equal(res.body.success, true);
+    // PRIVACY VERIFICATION: Full address & unmasked email exposed to Admin
+    assert.equal(res.body.data.address, 'House 42, Road 9, Mirpur-10');
+    assert.equal(res.body.data.email, 'farhan.kabir@example.com');
   });
 
   test('GET /api/donors/:id with non-existent ID returns 404', async () => {

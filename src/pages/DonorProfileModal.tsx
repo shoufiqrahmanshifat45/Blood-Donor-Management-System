@@ -136,6 +136,14 @@ export const DonorProfileModal: React.FC<DonorProfileModalProps> = ({
               </span>
             </div>
           </div>
+
+          {/* Informational Medical Notice */}
+          <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[11px] text-amber-800 dark:text-amber-200 flex items-start gap-2">
+            <AlertCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              <strong>Informational Notice:</strong> Donor eligibility status and compatibility records are informational only and do not constitute medical advice or a clinical guarantee. Final eligibility and cross-match compatibility must be verified with qualified healthcare professionals or blood transfusion services.
+            </p>
+          </div>
         </div>
 
         {/* Modal Action Buttons */}
