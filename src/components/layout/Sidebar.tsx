@@ -57,6 +57,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
     { id: 'emergency-contacts', label: 'Emergency Contacts', icon: PhoneCall },
   ];
 
+  const isToolsActive =
+    currentTab === 'tools' ||
+    currentTab === 'search-blood-group' ||
+    currentTab === 'bmi-calculator' ||
+    currentTab === 'eligibility' ||
+    currentTab === 'emergency-contacts';
+
   return (
     <aside className="w-[240px] bg-white dark:bg-[#0c1527] text-slate-700 dark:text-slate-300 flex flex-col h-screen sticky top-0 shrink-0 select-none border-r border-slate-200/90 dark:border-[#15213b] z-30 transition-colors">
       {/* Brand Header with Exact Screenshot Logo */}
@@ -96,38 +103,53 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
         })}
 
         {/* Tools Section */}
-        <div className="pt-2">
+        <div className="pt-1">
           <button
-            onClick={() => setToolsOpen(!toolsOpen)}
-            className="w-full flex items-center justify-between px-3.5 py-2 text-[12px] font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/60 dark:hover:bg-transparent rounded-lg transition-colors"
+            key="tools"
+            onClick={() => {
+              setToolsOpen((prev) => !prev);
+              onTabChange('tools');
+            }}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-[13px] transition-all duration-150 ${
+              isToolsActive
+                ? 'sidebar-active-tab bg-[#ef4444] text-white shadow-md shadow-red-500/25 font-semibold'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/90 dark:hover:bg-white/5'
+            }`}
           >
-            <div className="flex items-center gap-3">
-              <ToolsNavIcon className="w-4 h-4 text-slate-400" />
-              <span>Tools</span>
+            <div className="flex items-center gap-3 min-w-0">
+              <ToolsNavIcon
+                className={`w-4 h-4 shrink-0 ${
+                  isToolsActive ? 'text-white' : 'text-slate-400 dark:text-slate-400'
+                }`}
+              />
+              <span className="truncate">Tools</span>
             </div>
             {toolsOpen ? (
-              <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+              <ChevronUp
+                className={`w-3.5 h-3.5 shrink-0 ${
+                  isToolsActive ? 'text-white' : 'text-slate-400'
+                }`}
+              />
             ) : (
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              <ChevronDown
+                className={`w-3.5 h-3.5 shrink-0 ${
+                  isToolsActive ? 'text-white' : 'text-slate-400'
+                }`}
+              />
             )}
           </button>
 
           {toolsOpen && (
-            <div className="mt-0.5 space-y-0.5 pl-3 border-l border-slate-200 dark:border-slate-800 ml-4">
+            <div className="mt-1 space-y-0.5 pl-3 border-l border-slate-200 dark:border-slate-800 ml-4">
               {toolItems.map((tool) => {
                 const ToolIcon = tool.icon;
-                const isToolActive = currentTab === tool.id;
                 return (
                   <button
                     key={tool.id}
                     onClick={() => onTabChange(tool.id)}
-                    className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[11.5px] transition-all ${
-                      isToolActive
-                        ? 'tools-active-item bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white font-semibold'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/70 dark:hover:bg-white/5'
-                    }`}
+                    className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[11.5px] transition-all text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/70 dark:hover:bg-white/5"
                   >
-                    <ToolIcon className="w-3.5 h-3.5 shrink-0 text-slate-400" />
+                    <ToolIcon className="w-3.5 h-3.5 shrink-0 text-slate-400 dark:text-slate-400" />
                     <span className="tracking-tight leading-tight text-left">{tool.label}</span>
                   </button>
                 );

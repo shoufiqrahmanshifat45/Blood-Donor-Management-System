@@ -282,6 +282,8 @@ const DashboardContent: React.FC = () => {
         return <ToolsView defaultTab="eligibility" onNavigateTab={(tab) => setCurrentTab(tab)} />;
       case 'emergency-contacts':
         return <ToolsView defaultTab="emergency" onNavigateTab={(tab) => setCurrentTab(tab)} />;
+      case 'tools':
+        return <ToolsView defaultTab="search" onNavigateTab={(tab) => setCurrentTab(tab)} />;
       case 'settings':
         return <SettingsView />;
       case 'dashboard':
