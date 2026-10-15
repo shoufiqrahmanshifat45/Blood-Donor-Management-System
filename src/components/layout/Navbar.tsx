@@ -7,9 +7,17 @@ interface NavbarProps {
   onMenuToggle?: () => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  onProfileClick?: () => void;
+  onSearchSubmit?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, searchQuery, onSearchChange }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  onMenuToggle,
+  searchQuery,
+  onSearchChange,
+  onProfileClick,
+  onSearchSubmit,
+}) => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -72,6 +80,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, searchQuery, onSea
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') onSearchSubmit?.();
+            }}
             placeholder="Search donors, blood group, or request ID..."
             className="search-bar-input w-full pl-10 pr-4 py-2 bg-[#f1f5f9]/80 dark:bg-[#131d33] hover:bg-[#edf2f7] dark:hover:bg-[#182542] focus:bg-white dark:focus:bg-[#15213b] border border-slate-200/80 dark:border-slate-800/60 rounded-xl text-xs md:text-sm text-slate-700 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 transition-all"
           />
@@ -148,7 +159,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, searchQuery, onSea
         </div>
 
         {/* User Profile */}
-        <div className="flex items-center gap-2.5 cursor-pointer hover:opacity-95 transition-opacity">
+        <button
+          onClick={onProfileClick}
+          className="flex items-center gap-2.5 cursor-pointer hover:opacity-95 transition-opacity text-left bg-transparent border-none p-0 focus:outline-none focus:ring-2 focus:ring-red-500/20 rounded-full"
+          title="Open User Profile & Authentication"
+          aria-label="User Profile"
+        >
           <div className="user-avatar-ring w-10 h-10 rounded-full ring-2 ring-slate-200 dark:ring-slate-700 overflow-hidden bg-slate-900 flex items-center justify-center text-white shrink-0 shadow-xs">
             <img
               src={adminPhoto}
@@ -162,7 +178,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, searchQuery, onSea
             </p>
             <p className="text-[11px] text-slate-400 font-medium leading-none mt-0.5">Admin</p>
           </div>
-        </div>
+        </button>
       </div>
     </header>
   );
