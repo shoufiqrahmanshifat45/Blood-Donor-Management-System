@@ -99,7 +99,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'signup' }> = ({ initi
         {/* Brand Header */}
         <div className="text-center">
           <Link to="/" className="inline-flex items-center gap-2.5 group">
-            <div className="w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 p-1 flex items-center justify-center shadow-lg shadow-red-500/10 group-hover:scale-105 transition-all border border-slate-200 dark:border-slate-800">
+            <div className="w-16 h-16 flex items-center justify-center group-hover:scale-105 transition-transform">
               <img
                 src="/logo.png"
                 alt="RedPulse Logo"

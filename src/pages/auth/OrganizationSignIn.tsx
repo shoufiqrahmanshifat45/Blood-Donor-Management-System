@@ -61,8 +61,8 @@ export const OrganizationSignIn: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
-          <Link to="/" className="inline-flex items-center gap-2 mb-3">
-            <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-900 p-1 flex items-center justify-center shadow-md shadow-red-500/10 border border-slate-200 dark:border-slate-800">
+          <Link to="/" className="inline-flex items-center gap-2 mb-3 group">
+            <div className="w-14 h-14 flex items-center justify-center group-hover:scale-105 transition-transform">
               <img
                 src="/logo.png"
                 alt="RedPulse Logo"

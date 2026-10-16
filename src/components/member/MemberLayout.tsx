@@ -63,8 +63,8 @@ export const MemberLayout: React.FC = () => {
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
 
-              <Link to="/member/dashboard" className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-white dark:bg-slate-900 p-0.5 flex items-center justify-center shadow-md shadow-red-500/10 border border-slate-200/50 dark:border-slate-800">
+              <Link to="/member/dashboard" className="flex items-center gap-2.5 group">
+                <div className="w-9 h-9 flex items-center justify-center group-hover:scale-105 transition-transform">
                   <img
                     src="/logo.png"
                     alt="RedPulse Logo"

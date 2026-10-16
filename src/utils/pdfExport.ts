@@ -44,9 +44,9 @@ export function generateReportPDF(options: ReportExportOptions): void {
   doc.setFillColor(220, 38, 38); // #dc2626
   doc.rect(0, 0, pageWidth, 5, 'F');
 
-  // Official Logo Embedding (Heart / ECG / Blood drop)
+  // Official Transparent Logo Embedding (Heart / ECG / Blood drop)
   try {
-    doc.addImage(redPulseLogoBase64, 'JPEG', margin, 8.5, 16, 16);
+    doc.addImage(redPulseLogoBase64, 'PNG', margin, 8, 16, 16);
   } catch (err) {
     console.warn('Could not embed logo in PDF:', err);
   }

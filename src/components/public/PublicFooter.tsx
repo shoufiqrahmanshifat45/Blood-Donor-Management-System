@@ -45,8 +45,8 @@ export const PublicFooter: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-10">
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-white p-1 flex items-center justify-center shadow-md shadow-red-500/10 border border-slate-700">
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="w-10 h-10 flex items-center justify-center group-hover:scale-105 transition-transform">
                 <img
                   src="/logo.png"
                   alt="RedPulse Logo"

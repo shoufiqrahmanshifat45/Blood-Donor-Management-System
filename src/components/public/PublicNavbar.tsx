@@ -46,7 +46,7 @@ export const PublicNavbar: React.FC = () => {
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo & Brand */}
           <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-white/95 dark:bg-slate-900/90 p-1 flex items-center justify-center shadow-md shadow-red-500/10 group-hover:scale-105 transition-all border border-slate-200/60 dark:border-slate-800">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center group-hover:scale-105 transition-transform">
               <img
                 src="/logo.png"
                 alt="RedPulse Logo"
