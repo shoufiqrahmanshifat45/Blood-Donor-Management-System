@@ -16,6 +16,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import { DonationItem, BloodRequestItem, AppointmentItem } from '../../types/api';
+import { RealTimeClock } from '../../components/common/RealTimeClock';
 
 export const MemberOverview: React.FC = () => {
   const { user } = useAuth();
@@ -56,6 +57,22 @@ export const MemberOverview: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Top Header Row matching Admin Dashboard */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+            Member Dashboard Overview
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Real-time donor profile, blood requisitions, and donation history
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <RealTimeClock />
+        </div>
+      </div>
+
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 rounded-3xl p-6 sm:p-8 text-white shadow-lg shadow-red-500/20 relative overflow-hidden">
         <div className="relative z-10 max-w-2xl space-y-2">

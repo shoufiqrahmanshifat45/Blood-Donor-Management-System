@@ -37,6 +37,7 @@ import { HELP_FAQS, INITIAL_DONORS, RECENT_BLOOD_REQUESTS, BLOOD_STOCK_DATA } fr
 import { useTheme } from '../context/ThemeContext';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
+import { RealTimeClock } from '../components/common/RealTimeClock';
 
 export const SettingsView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
@@ -244,8 +245,10 @@ export const SettingsView: React.FC = () => {
           </p>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex items-center gap-1 p-1 bg-white dark:bg-[#0c1527] border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-x-auto self-start sm:self-auto max-w-full">
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto shrink-0">
+          <RealTimeClock variant="compact" />
+          {/* Tab Switcher */}
+          <div className="flex items-center gap-1 p-1 bg-white dark:bg-[#0c1527] border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-x-auto max-w-full">
           <button
             onClick={() => setActiveTab('profile')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
@@ -319,6 +322,7 @@ export const SettingsView: React.FC = () => {
           </button>
         </div>
       </div>
+    </div>
 
       {/* Tab 1: Profile Tab */}
       {activeTab === 'profile' && (

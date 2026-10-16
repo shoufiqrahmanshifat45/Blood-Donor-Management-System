@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { RealTimeClock } from '../common/RealTimeClock';
 
 export const PublicNavbar: React.FC = () => {
   const { user, isAuthenticated, isStaffOrAdmin, logout } = useAuth();
@@ -86,6 +87,11 @@ export const PublicNavbar: React.FC = () => {
 
           {/* Right Action Buttons */}
           <div className="hidden sm:flex items-center gap-2.5">
+            {/* Real-time System Clock */}
+            <div className="hidden xl:block mr-1">
+              <RealTimeClock variant="compact" />
+            </div>
+
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
@@ -178,6 +184,9 @@ export const PublicNavbar: React.FC = () => {
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
         <div className="sm:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b1324] px-4 pt-3 pb-6 space-y-2 shadow-xl">
+          <div className="flex justify-center pb-2">
+            <RealTimeClock variant="compact" />
+          </div>
           {navLinks.map((item) => (
             <Link
               key={item.path}

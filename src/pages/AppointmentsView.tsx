@@ -19,6 +19,7 @@ import {
 import { api } from '../services/api';
 import { DetailedAppointment, DetailedDonor } from '../data/mockData';
 import { useNotification } from '../context/NotificationContext';
+import { RealTimeClock } from '../components/common/RealTimeClock';
 
 interface AppointmentsViewProps {
   onNavigateTab?: (tab: string) => void;
@@ -191,13 +192,16 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({ onNavigateTa
           </p>
         </div>
 
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#ef4444] hover:bg-[#dc2626] text-white rounded-xl text-xs md:text-sm font-semibold shadow-md shadow-red-500/20 transition-all hover:scale-[1.01] active:scale-[0.99] shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          Schedule Appointment
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <RealTimeClock variant="compact" />
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#ef4444] hover:bg-[#dc2626] text-white rounded-xl text-xs md:text-sm font-semibold shadow-md shadow-red-500/20 transition-all hover:scale-[1.01] active:scale-[0.99] shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            Schedule Appointment
+          </button>
+        </div>
       </div>
 
       {/* Summary KPI Cards */}

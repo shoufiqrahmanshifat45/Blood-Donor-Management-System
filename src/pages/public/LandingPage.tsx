@@ -20,6 +20,7 @@ import {
 import { api } from '../../services/api';
 import { BANGLADESH_DISTRICTS } from '../../data/mockData';
 import { BloodRequestItem } from '../../types/api';
+import { RealTimeClock } from '../../components/common/RealTimeClock';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
@@ -88,9 +89,12 @@ export const LandingPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left Hero Content */}
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100/80 dark:bg-red-950/70 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs font-semibold shadow-xs">
-                <Sparkles className="w-3.5 h-3.5 text-red-500" />
-                <span>Bangladesh Central Voluntary Blood Donation Network</span>
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-100/80 dark:bg-red-950/70 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs font-semibold shadow-xs">
+                  <Sparkles className="w-3.5 h-3.5 text-red-500" />
+                  <span>Bangladesh Central Voluntary Blood Donation Network</span>
+                </div>
+                <RealTimeClock variant="hero" />
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1]">
@@ -270,12 +274,15 @@ export const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          <Link
-            to="/blood-requests"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 dark:text-red-400 hover:text-red-700 transition-colors"
-          >
-            View All Blood Requests <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <RealTimeClock variant="compact" />
+            <Link
+              to="/blood-requests"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 dark:text-red-400 hover:text-red-700 transition-colors"
+            >
+              View All Blood Requests <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
 
         {loadingRequests ? (

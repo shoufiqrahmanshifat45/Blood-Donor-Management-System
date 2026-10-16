@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { RealTimeClock } from '../common/RealTimeClock';
 
 export const MemberLayout: React.FC = () => {
   const { user, logout, isStaffOrAdmin } = useAuth();
@@ -79,6 +80,11 @@ export const MemberLayout: React.FC = () => {
 
             {/* Right: Theme toggle, Public portal link, User avatar, Sign Out */}
             <div className="flex items-center gap-2.5">
+              {/* Real-time system clock in Member topbar */}
+              <div className="hidden md:block">
+                <RealTimeClock variant="compact" />
+              </div>
+
               <Link
                 to="/"
                 className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"

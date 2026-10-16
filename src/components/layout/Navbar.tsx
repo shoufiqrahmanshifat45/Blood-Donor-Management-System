@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Menu, Search, Bell, X, Clock, LogIn, Globe, UserCheck } from 'lucide-react';
 import { useAdminPhoto } from '../../utils/avatarStorage';
 import { ThemeToggle } from '../common/ThemeToggle';
+import { RealTimeClock } from '../common/RealTimeClock';
 import { useAuth } from '../../context/AuthContext';
 
 interface NavbarProps {
@@ -113,6 +114,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <UserCheck className="w-3.5 h-3.5" />
             Member View
           </Link>
+        </div>
+
+        {/* Real-time Live System Clock */}
+        <div className="hidden lg:block">
+          <RealTimeClock variant="compact" />
         </div>
 
         {/* Theme Selector (Light / Dark / System / Custom) */}

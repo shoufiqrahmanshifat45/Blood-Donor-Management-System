@@ -21,6 +21,7 @@ import { api } from '../services/api';
 import { DetailedDonor, BANGLADESH_DISTRICTS } from '../data/mockData';
 import { DonorProfileModal } from './DonorProfileModal';
 import { DonorRegistrationModal } from './DonorRegistrationModal';
+import { RealTimeClock } from '../components/common/RealTimeClock';
 
 interface DonorsViewProps {
   onBookAppointment?: (donor: DetailedDonor) => void;
@@ -133,13 +134,16 @@ export const DonorsView: React.FC<DonorsViewProps> = ({
           </p>
         </div>
 
-        <button
-          onClick={() => setIsRegisterOpen(true)}
-          className="custom-accent-btn inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#ef4444] text-white shadow-md shadow-red-500/25 hover:bg-red-600 transition-colors shrink-0"
-        >
-          <UserPlus className="w-4 h-4 stroke-[2.2]" />
-          <span>Register New Donor</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <RealTimeClock variant="compact" />
+          <button
+            onClick={() => setIsRegisterOpen(true)}
+            className="custom-accent-btn inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#ef4444] text-white shadow-md shadow-red-500/25 hover:bg-red-600 transition-colors"
+          >
+            <UserPlus className="w-4 h-4 stroke-[2.2]" />
+            <span>Register New Donor</span>
+          </button>
+        </div>
       </div>
 
       {/* KPI Stat Cards */}
