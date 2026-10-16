@@ -9,35 +9,36 @@ import {
   Users,
   Clock,
   ShieldCheck,
-  FileSpreadsheet,
   AlertTriangle,
   ArrowUpRight,
-  ArrowDownRight,
+  RefreshCw,
 } from 'lucide-react';
-import {
-  DONORS_BY_BLOOD_GROUP,
-  BLOOD_STOCK_DATA,
-  DONOR_REGISTRATION_TRENDS,
-  RECENT_BLOOD_REQUESTS,
-} from '../data/mockData';
 import { useNotification } from '../context/NotificationContext';
+import { useDashboardData } from '../hooks/useDashboardData';
 import { generateReportPDF } from '../utils/pdfExport';
+import { ChartSkeleton, TableSkeleton } from '../components/common/LoadingSkeleton';
 
 export const ReportsView: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'30d' | '90d' | 'year' | 'all'>('30d');
+  const { data, loading, error, refresh } = useDashboardData();
   const { success } = useNotification();
 
-  const totalDonors = 1248;
-  const totalDonations = 892;
-  const totalUnitsAvailable = BLOOD_STOCK_DATA.reduce((sum, item) => sum + item.units, 0);
-  const criticalShortageGroups = BLOOD_STOCK_DATA.filter((s) => s.status === 'Low');
+  const totalDonors = data?.totalDonorsCount || '0';
+  const totalDonations = data?.stats?.find((s) => s.id === 'total-donations')?.value || '0';
+  const stockItems = data?.bloodStock || [];
+  const totalUnitsAvailable = stockItems.reduce((sum, item) => sum + item.availableUnits, 0);
+  const criticalShortageGroups = stockItems.filter((s) => s.status === 'Low' || s.status === 'Critical');
+  const donorsByBloodGroup = data?.donorsByBloodGroup || [];
+  const trends = data?.donorRegistrationTrends || [];
+
+  const totalDonorsNum = parseInt(String(totalDonors).replace(/,/g, ''), 10) || 1;
 
   // Export PDF generator
   const handleExportPDF = () => {
     try {
       generateReportPDF({
         timeRange,
-        adminName: 'Shoufiq Rahman Shifat',
+        adminName: 'BDMS Administrator',
       });
       success('Report Exported', 'The report PDF has been downloaded successfully.');
     } catch (err) {
@@ -55,11 +56,19 @@ export const ReportsView: React.FC = () => {
             Reports & Analytics
           </h1>
           <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Audit blood inventory, seasonal demand fluctuations, and demographic statistics.
+            Audit blood inventory, seasonal demand fluctuations, and demographic statistics directly from database.
           </p>
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+          <button
+            onClick={refresh}
+            className="p-2 bg-white dark:bg-[#0c1527] border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+            title="Refresh database metrics"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+
           {/* Time range selector */}
           <div className="flex items-center bg-white dark:bg-[#0c1527] border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-xs">
             {(
@@ -106,13 +115,13 @@ export const ReportsView: React.FC = () => {
           </div>
           <div className="flex items-baseline justify-between">
             <span className="text-2xl font-bold text-slate-900 dark:text-white">
-              {totalDonations}
+              {loading && !data ? '...' : totalDonations}
             </span>
             <span className="text-xs font-bold text-emerald-600 flex items-center">
               <ArrowUpRight className="w-3.5 h-3.5" /> +8.4%
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">Units collected this session</p>
+          <p className="text-[11px] text-slate-400 mt-1">Verified units across network</p>
         </div>
 
         <div className="bg-white dark:bg-[#0c1527] p-4 rounded-2xl border border-slate-100 dark:border-[#15213b] shadow-xs">
@@ -124,13 +133,13 @@ export const ReportsView: React.FC = () => {
           </div>
           <div className="flex items-baseline justify-between">
             <span className="text-2xl font-bold text-slate-900 dark:text-white">
-              {totalUnitsAvailable} Bags
+              {loading && !data ? '...' : `${totalUnitsAvailable} Bags`}
             </span>
             <span className="text-xs font-bold text-emerald-600 flex items-center">
               <ArrowUpRight className="w-3.5 h-3.5" /> +10.2%
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">8 groups represented in inventory</p>
+          <p className="text-[11px] text-slate-400 mt-1">Across all 8 blood groups in inventory</p>
         </div>
 
         <div className="bg-white dark:bg-[#0c1527] p-4 rounded-2xl border border-slate-100 dark:border-[#15213b] shadow-xs">
@@ -142,31 +151,31 @@ export const ReportsView: React.FC = () => {
           </div>
           <div className="flex items-baseline justify-between">
             <span className="text-2xl font-bold text-slate-900 dark:text-white">
-              {totalDonors}
+              {loading && !data ? '...' : totalDonors}
             </span>
             <span className="text-xs font-bold text-emerald-600 flex items-center">
               <ArrowUpRight className="w-3.5 h-3.5" /> +12.0%
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">Across 64 Bangladesh districts</p>
+          <p className="text-[11px] text-slate-400 mt-1">Active verified donors in database</p>
         </div>
 
         <div className="bg-white dark:bg-[#0c1527] p-4 rounded-2xl border border-slate-100 dark:border-[#15213b] shadow-xs">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-slate-400">SOS Fulfillment Rate</span>
+            <span className="text-xs font-medium text-slate-400">Active Blood Requisitions</span>
             <span className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center">
               <Clock className="w-4 h-4" />
             </span>
           </div>
           <div className="flex items-baseline justify-between">
             <span className="text-2xl font-bold text-slate-900 dark:text-white">
-              96.4%
+              {loading && !data ? '...' : data?.stats?.find((s) => s.id === 'blood-requests')?.value || '0'}
             </span>
             <span className="text-xs font-bold text-emerald-600 flex items-center">
-              <ArrowUpRight className="w-3.5 h-3.5" /> +3.1%
+              <ArrowUpRight className="w-3.5 h-3.5" /> Live
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">Avg match time: 18 minutes</p>
+          <p className="text-[11px] text-slate-400 mt-1">Hospital requests tracked in system</p>
         </div>
       </div>
 
@@ -192,54 +201,58 @@ export const ReportsView: React.FC = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {BLOOD_STOCK_DATA.map((item) => {
-              const maxScale = 150;
-              const percent = Math.min(100, Math.round((item.units / maxScale) * 100));
-              const isLow = item.status === 'Low';
-              return (
-                <div
-                  key={item.bloodGroup}
-                  className="p-3 rounded-xl bg-slate-50 dark:bg-[#131d33] border border-slate-100 dark:border-slate-800/80"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded-lg bg-red-100 dark:bg-red-950/80 text-red-600 dark:text-red-400 font-extrabold text-xs flex items-center justify-center">
-                        {item.bloodGroup}
-                      </span>
-                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                        {item.units} Units
+          {loading && !data ? (
+            <TableSkeleton rows={8} />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {stockItems.map((item) => {
+                const maxScale = 150;
+                const percent = Math.min(100, Math.round((item.availableUnits / maxScale) * 100));
+                const isLow = item.status === 'Low' || item.status === 'Critical';
+                return (
+                  <div
+                    key={item.bloodGroup}
+                    className="p-3 rounded-xl bg-slate-50 dark:bg-[#131d33] border border-slate-100 dark:border-slate-800/80"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-7 h-7 rounded-lg bg-red-100 dark:bg-red-950/80 text-red-600 dark:text-red-400 font-extrabold text-xs flex items-center justify-center">
+                          {item.bloodGroup}
+                        </span>
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                          {item.availableUnits} Units
+                        </span>
+                      </div>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          isLow
+                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
+                            : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
+                        }`}
+                      >
+                        {item.status}
                       </span>
                     </div>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        isLow
-                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
-                          : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
-                      }`}
-                    >
-                      {item.status}
-                    </span>
-                  </div>
 
-                  {/* Visual Progress Bar */}
-                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        isLow ? 'bg-amber-500' : 'bg-emerald-500'
-                      }`}
-                      style={{ width: `${percent}%` }}
-                    />
-                  </div>
+                    {/* Visual Progress Bar */}
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          isLow ? 'bg-amber-500' : 'bg-emerald-500'
+                        }`}
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
 
-                  <div className="flex justify-between text-[10px] text-slate-400 mt-1.5">
-                    <span>Safety Baseline: 30</span>
-                    <span>Capacity: 150</span>
+                    <div className="flex justify-between text-[10px] text-slate-400 mt-1.5">
+                      <span>Reserved: {item.reservedUnits}</span>
+                      <span>Capacity: 150</span>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Blood Group Demographic Distribution (Col 5) */}
@@ -264,13 +277,13 @@ export const ReportsView: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                {DONORS_BY_BLOOD_GROUP.map((d) => {
-                  const share = ((d.count / totalDonors) * 100).toFixed(1);
+                {donorsByBloodGroup.map((d) => {
+                  const share = ((d.count / totalDonorsNum) * 100).toFixed(1);
                   return (
-                    <tr key={d.bloodGroup} className="hover:bg-slate-50 dark:hover:bg-[#131d33]/50">
+                    <tr key={d.group} className="hover:bg-slate-50 dark:hover:bg-[#131d33]/50">
                       <td className="py-2.5 font-bold text-red-600 dark:text-red-400 flex items-center gap-1.5">
                         <span className="w-5 h-5 rounded-md bg-red-50 dark:bg-red-950/60 flex items-center justify-center text-[10px]">
-                          {d.bloodGroup}
+                          {d.group}
                         </span>
                       </td>
                       <td className="py-2.5 text-center font-semibold text-slate-800 dark:text-slate-200">
@@ -302,16 +315,16 @@ export const ReportsView: React.FC = () => {
           <div>
             <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-emerald-500" />
-              Annual Donation & Acquisition Trajectory (Jan - Oct)
+              Annual Donation & Acquisition Trajectory
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Tracking monthly intake performance and donor retention.
+              Live monthly intake performance and cumulative database donor retention.
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2">
-          {DONOR_REGISTRATION_TRENDS.map((t) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+          {trends.map((t) => (
             <div
               key={t.month}
               className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#131d33] text-center border border-slate-100 dark:border-slate-800/80"

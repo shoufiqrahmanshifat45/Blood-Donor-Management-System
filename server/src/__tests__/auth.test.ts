@@ -45,7 +45,8 @@ describe('Authentication & User Management Endpoints', () => {
     assert.equal((res.body.data.user as any).passwordHash, undefined);
 
     // Cookie Verification: HttpOnly bdms_token cookie set
-    const cookies = res.headers['set-cookie'] || [];
+    const rawCookies = res.headers['set-cookie'];
+    const cookies: string[] = Array.isArray(rawCookies) ? rawCookies : rawCookies ? [rawCookies] : [];
     assert.ok(cookies.some((c: string) => c.includes('bdms_token=') && c.includes('HttpOnly')));
 
     registeredToken = res.body.data.token;
@@ -76,7 +77,8 @@ describe('Authentication & User Management Endpoints', () => {
     assert.equal((res.body.data.user as any).password, undefined);
 
     // Cookie Verification: HttpOnly bdms_token cookie set on login
-    const cookies = res.headers['set-cookie'] || [];
+    const rawLoginCookies = res.headers['set-cookie'];
+    const cookies: string[] = Array.isArray(rawLoginCookies) ? rawLoginCookies : rawLoginCookies ? [rawLoginCookies] : [];
     assert.ok(cookies.some((c: string) => c.includes('bdms_token=') && c.includes('HttpOnly')));
   });
 
@@ -139,7 +141,8 @@ describe('Authentication & User Management Endpoints', () => {
     assert.equal(res.status, 200);
     assert.equal(res.body.success, true);
 
-    const cookies = res.headers['set-cookie'] || [];
+    const rawLogoutCookies = res.headers['set-cookie'];
+    const cookies: string[] = Array.isArray(rawLogoutCookies) ? rawLogoutCookies : rawLogoutCookies ? [rawLogoutCookies] : [];
     assert.ok(
       cookies.some((c: string) => c.includes('bdms_token=') && (c.includes('Expires=Thu, 01 Jan 1970') || c.includes('Max-Age=0')))
     );

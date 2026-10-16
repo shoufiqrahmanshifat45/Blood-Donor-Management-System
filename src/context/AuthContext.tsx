@@ -30,10 +30,20 @@ interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isStaffOrAdmin: boolean;
+  isMember: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (data: { name: string; email: string; password: string; phone?: string; role?: string }) => Promise<void>;
+  verifyOrganization: (challengeId: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  updateProfile: (data: {
+    name?: string;
+    phone?: string | null;
+    avatarUrl?: string | null;
+    donor?: any;
+  }) => Promise<void>;
+  changePassword: (currentPass: string, newPass: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -78,6 +88,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const verifyOrganization = async (challengeId: string, code: string) => {
+    const res = await api.verifyOrganizationLogin({ challengeId, code });
+    if (res && res.user) {
+      setUser(res.user);
+      await fetchCurrentUser();
+    }
+  };
+
   const logout = async () => {
     try {
       await api.logout();
@@ -86,16 +104,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateProfile = async (data: {
+    name?: string;
+    phone?: string | null;
+    avatarUrl?: string | null;
+    donor?: any;
+  }) => {
+    const updated = await api.updateProfile(data);
+    if (updated) {
+      await fetchCurrentUser();
+    }
+  };
+
+  const changePassword = async (currentPass: string, newPass: string) => {
+    await api.changePassword(currentPass, newPass);
+  };
+
+  const isStaffOrAdmin = Boolean(
+    user && ['SUPER_ADMIN', 'ADMIN', 'STAFF', 'HOSPITAL_COORDINATOR'].includes(user.role?.toUpperCase())
+  );
+
+  const isMember = Boolean(user && !isStaffOrAdmin);
+
   return (
     <AuthContext.Provider
       value={{
         user,
         isAuthenticated: Boolean(user),
         isLoading,
+        isStaffOrAdmin,
+        isMember,
         login,
         register,
+        verifyOrganization,
         logout,
         refreshUser: fetchCurrentUser,
+        updateProfile,
+        changePassword,
       }}
     >
       {children}

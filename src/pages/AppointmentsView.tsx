@@ -17,7 +17,7 @@ import {
   HeartPulse,
 } from 'lucide-react';
 import { api } from '../services/api';
-import { DetailedAppointment, INITIAL_DONORS } from '../data/mockData';
+import { DetailedAppointment, DetailedDonor } from '../data/mockData';
 import { useNotification } from '../context/NotificationContext';
 
 interface AppointmentsViewProps {
@@ -68,6 +68,8 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({ onNavigateTa
     '05:00 PM',
   ];
 
+  const [registeredDonors, setRegisteredDonors] = useState<DetailedDonor[]>([]);
+
   const fetchAppointments = async () => {
     setLoading(true);
     try {
@@ -82,6 +84,9 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({ onNavigateTa
 
   useEffect(() => {
     fetchAppointments();
+    api.searchDonors({ limit: 100 }).then((res) => {
+      if (res && res.donors) setRegisteredDonors(res.donors);
+    }).catch(() => {});
   }, []);
 
   const handleStatusChange = async (
@@ -496,7 +501,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({ onNavigateTa
                 </label>
                 <select
                   onChange={(e) => {
-                    const found = INITIAL_DONORS.find((d) => d.id === e.target.value);
+                    const found = registeredDonors.find((d) => d.id === e.target.value);
                     if (found) {
                       setFormData({
                         ...formData,
@@ -509,7 +514,7 @@ export const AppointmentsView: React.FC<AppointmentsViewProps> = ({ onNavigateTa
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-red-500/20"
                 >
                   <option value="">-- Choose registered donor --</option>
-                  {INITIAL_DONORS.map((d) => (
+                  {registeredDonors.map((d) => (
                     <option key={d.id} value={d.id}>
                       {d.name} ({d.bloodGroup}) - {d.phone}
                     </option>

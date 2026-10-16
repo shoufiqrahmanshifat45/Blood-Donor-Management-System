@@ -31,6 +31,7 @@ export const ActionModals: React.FC<ActionModalsProps> = ({
   const [donorPhone, setDonorPhone] = useState('');
   const [donorDistrict, setDonorDistrict] = useState('Dhaka');
   const [donorAge, setDonorAge] = useState('25');
+  const [donorDonations, setDonorDonations] = useState('0');
 
   // Blood Request State
   const [patientName, setPatientName] = useState('');
@@ -87,6 +88,7 @@ export const ActionModals: React.FC<ActionModalsProps> = ({
         phone: donorPhone,
         district: donorDistrict,
         thana: 'Central',
+        totalDonations: parseInt(donorDonations, 10) || 0,
       });
       success('Donor Registered!', `${donorName} (${donorBlood}) added to active donors.`);
       if (onSuccess) onSuccess();
@@ -94,6 +96,7 @@ export const ActionModals: React.FC<ActionModalsProps> = ({
       // Reset form
       setDonorName('');
       setDonorPhone('');
+      setDonorDonations('0');
     } catch (err) {
       error('Registration Failed', (err as Error).message);
     } finally {
@@ -272,6 +275,17 @@ export const ActionModals: React.FC<ActionModalsProps> = ({
               />
             </FormField>
           </div>
+
+          <FormField label="Previous Blood Donations Count">
+            <TextInput
+              type="number"
+              min="0"
+              max="500"
+              placeholder="0 (times previously donated)"
+              value={donorDonations}
+              onChange={(e) => setDonorDonations(e.target.value)}
+            />
+          </FormField>
 
           <div className="pt-2">
             <Button

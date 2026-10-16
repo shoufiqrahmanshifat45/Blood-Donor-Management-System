@@ -6,7 +6,7 @@ const donationsService = new DonationsService();
 export class DonationsController {
   async getDonations(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await donationsService.getDonations(req.query as any);
+      const result = await donationsService.getDonations(req.query as any, req.user!);
       res.status(200).json({
         success: true,
         data: result.donations,
@@ -19,7 +19,7 @@ export class DonationsController {
 
   async getDonationById(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await donationsService.getDonationById(req.params.id);
+      const result = await donationsService.getDonationById(req.params.id, req.user!);
       res.status(200).json({
         success: true,
         data: result,

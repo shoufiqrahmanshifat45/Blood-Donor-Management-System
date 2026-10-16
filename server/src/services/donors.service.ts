@@ -39,16 +39,16 @@ export class DonorsService {
     }
 
     const where: any = {};
-    if (query.bloodGroup) {
+    if (query.bloodGroup && query.bloodGroup !== 'ALL') {
       where.bloodGroup = toPrismaBloodGroup(query.bloodGroup);
     }
-    if (query.district) {
+    if (query.district && query.district !== 'ALL') {
       where.district = { contains: query.district, mode: 'insensitive' };
     }
-    if (query.thana) {
+    if (query.thana && query.thana !== 'ALL') {
       where.thana = { contains: query.thana, mode: 'insensitive' };
     }
-    if (query.status) {
+    if (query.status && query.status !== 'ALL') {
       where.status = toPrismaDonorStatus(query.status);
     }
     if (query.isAvailable !== undefined) {
@@ -99,7 +99,7 @@ export class DonorsService {
 
     const isPrivileged =
       currentUser &&
-      [Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.HOSPITAL_COORDINATOR].includes(currentUser.role);
+      ([Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.HOSPITAL_COORDINATOR] as Role[]).includes(currentUser.role);
 
     return {
       donors: donors.map((d) => ({
@@ -171,7 +171,7 @@ export class DonorsService {
 
     const isPrivileged =
       currentUser &&
-      [Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.HOSPITAL_COORDINATOR].includes(currentUser.role);
+      ([Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.HOSPITAL_COORDINATOR] as Role[]).includes(currentUser.role);
     const isOwner = Boolean(currentUser && d.userId && d.userId === currentUser.id);
     const isAuthorized = Boolean(isPrivileged || isOwner);
 
@@ -256,6 +256,7 @@ export class DonorsService {
         address: data.address?.trim() || null,
         weightKg: data.weightKg || null,
         lastDonationDate: data.lastDonationDate ? new Date(data.lastDonationDate) : null,
+        totalDonations: data.totalDonations !== undefined ? Math.max(0, parseInt(String(data.totalDonations), 10) || 0) : 0,
         isAvailable: data.isAvailable !== undefined ? data.isAvailable : true,
         readyForEmergency: data.readyForEmergency !== undefined ? data.readyForEmergency : true,
       },
@@ -271,6 +272,8 @@ export class DonorsService {
       email: created.email,
       district: created.district,
       thana: created.thana,
+      totalDonations: created.totalDonations,
+      lastDonationDate: created.lastDonationDate ? created.lastDonationDate.toISOString() : null,
       status: fromPrismaDonorStatus(created.status),
       isAvailable: created.isAvailable,
       readyForEmergency: created.readyForEmergency,
@@ -309,6 +312,12 @@ export class DonorsService {
     if (data.thana) updatePayload.thana = data.thana.trim();
     if (data.address !== undefined) updatePayload.address = data.address?.trim() || null;
     if (data.weightKg !== undefined) updatePayload.weightKg = data.weightKg;
+    if (data.totalDonations !== undefined) {
+      updatePayload.totalDonations = Math.max(0, parseInt(String(data.totalDonations), 10) || 0);
+    }
+    if (data.lastDonationDate !== undefined) {
+      updatePayload.lastDonationDate = data.lastDonationDate ? new Date(data.lastDonationDate) : null;
+    }
     if (data.isAvailable !== undefined) updatePayload.isAvailable = data.isAvailable;
     if (data.readyForEmergency !== undefined) updatePayload.readyForEmergency = data.readyForEmergency;
 
@@ -335,6 +344,8 @@ export class DonorsService {
       email: updated.email,
       district: updated.district,
       thana: updated.thana,
+      totalDonations: updated.totalDonations,
+      lastDonationDate: updated.lastDonationDate ? updated.lastDonationDate.toISOString() : null,
       status: fromPrismaDonorStatus(updated.status),
       isAvailable: updated.isAvailable,
       readyForEmergency: updated.readyForEmergency,

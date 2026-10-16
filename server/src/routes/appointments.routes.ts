@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { AppointmentsController } from '../controllers/appointments.controller.js';
 import { validate } from '../middleware/validate.js';
+import { optionalAuthenticate } from '../middleware/auth.js';
 import {
   createAppointmentSchema,
   updateAppointmentStatusSchema,
@@ -12,8 +13,8 @@ const router = Router();
 const controller = new AppointmentsController();
 
 // Listing & detail endpoints
-router.get('/', validate({ query: appointmentQuerySchema }), controller.getAppointments);
-router.get('/:id', validate({ params: idParamSchema }), controller.getAppointmentById);
+router.get('/', optionalAuthenticate, validate({ query: appointmentQuerySchema }), controller.getAppointments);
+router.get('/:id', optionalAuthenticate, validate({ params: idParamSchema }), controller.getAppointmentById);
 
 // Booking appointment
 router.post('/', validate({ body: createAppointmentSchema }), controller.createAppointment);

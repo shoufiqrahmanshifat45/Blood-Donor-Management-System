@@ -36,27 +36,43 @@ import { useAdminPhoto } from '../utils/avatarStorage';
 import { HELP_FAQS, INITIAL_DONORS, RECENT_BLOOD_REQUESTS, BLOOD_STOCK_DATA } from '../data/mockData';
 import { useTheme } from '../context/ThemeContext';
 import { useNotification } from '../context/NotificationContext';
+import { useAuth } from '../context/AuthContext';
 
 export const SettingsView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     'profile' | 'security' | 'theme' | 'notifications' | 'system' | 'help'
   >('profile');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const { user, updateProfile, changePassword } = useAuth();
 
   // Photo management via custom hook
   const { photo: adminPhoto, updatePhoto, resetPhoto } = useAdminPhoto();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Profile Form (Admin name is locked as Shoufiq Rahman Shifat)
+  // Profile Form (Admin name is editable and synchronized with database)
   const [adminProfile, setAdminProfile] = useState({
-    name: 'Shoufiq Rahman Shifat', // Locked name per requirement
-    role: 'System Administrator & Coordinator',
-    email: 'shoufiq.shifat@bdms.org',
-    phone: '+880 1711-892451',
+    name: user?.name || 'Shoufiq Rahman Shifat',
+    role: user?.role ? user.role.replace('_', ' ') : 'System Administrator & Coordinator',
+    email: user?.email || 'shoufiq.shifat@bdms.org',
+    phone: user?.phone || '+880 1711-892451',
     organization: 'Blood Donor Management Network Bangladesh',
-    bloodGroup: 'B+',
+    bloodGroup: user?.donorProfile?.bloodGroup || 'B+',
     bio: 'Lead coordinator overseeing national blood reserve logistics, donor matching algorithms, and emergency dispatch.',
   });
+
+  // Sync with auth user
+  React.useEffect(() => {
+    if (user) {
+      setAdminProfile((prev) => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone,
+        role: user.role.replace('_', ' '),
+        bloodGroup: user.donorProfile?.bloodGroup || prev.bloodGroup,
+      }));
+    }
+  }, [user]);
 
   // Password & Security Form
   const [passwordForm, setPasswordForm] = useState({
@@ -104,10 +120,15 @@ export const SettingsView: React.FC = () => {
     }
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       const base64Data = event.target?.result as string;
       if (base64Data) {
         updatePhoto(base64Data);
+        try {
+          if (user) {
+            await updateProfile({ avatarUrl: base64Data });
+          }
+        } catch {}
         success(
           'Photo Updated Successfully',
           'Your new profile photo is active across the dashboard and taskbar.'
@@ -119,17 +140,32 @@ export const SettingsView: React.FC = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleResetPhoto = () => {
+  const handleResetPhoto = async () => {
     resetPhoto();
+    try {
+      if (user) {
+        await updateProfile({ avatarUrl: null });
+      }
+    } catch {}
     success('Photo Restored', 'Profile photo has been reset to system default avatar.');
   };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    success('Settings Updated', 'Profile details saved successfully.');
+    try {
+      if (user) {
+        await updateProfile({
+          name: adminProfile.name.trim(),
+          phone: adminProfile.phone.trim() || null,
+        });
+      }
+      success('Settings Updated', 'Profile details saved successfully to database.');
+    } catch (err: any) {
+      notifyError('Update Failed', err.message || 'Unable to save profile details.');
+    }
   };
 
-  const handlePasswordUpdate = (e: React.FormEvent) => {
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!passwordForm.currentPassword) {
       notifyError('Current Password Required', 'Please provide your existing password.');
@@ -143,8 +179,13 @@ export const SettingsView: React.FC = () => {
       notifyError('Passwords Do Not Match', 'New password and confirmation must match.');
       return;
     }
-    setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    success('Password Updated', 'Your administrative security credentials have been updated.');
+    try {
+      await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      success('Password Updated', 'Your security credentials have been updated in the database.');
+    } catch (err: any) {
+      notifyError('Password Update Failed', err.message || 'Failed to update password.');
+    }
   };
 
   const handleSaveNotifs = () => {
@@ -377,17 +418,17 @@ export const SettingsView: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                    Full Name (Locked)
+                    Full Name
                   </label>
                   <div className="relative">
                     <input
                       type="text"
                       value={adminProfile.name}
-                      readOnly
-                      disabled
-                      className="w-full px-3 py-2 bg-slate-100 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-800 dark:text-white cursor-not-allowed select-none"
+                      onChange={(e) =>
+                        setAdminProfile({ ...adminProfile, name: e.target.value })
+                      }
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
                     />
-                    <Lock className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
                   </div>
                 </div>
 

@@ -36,6 +36,7 @@ export const bloodRequestQuerySchema = z.object({
   urgency: z.enum(urgencies).optional(),
   bloodGroup: z.string().optional(),
   hospital: z.string().optional(),
+  requesterId: z.string().optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });

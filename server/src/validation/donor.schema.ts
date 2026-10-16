@@ -16,6 +16,7 @@ export const createDonorSchema = z.object({
   address: z.string().trim().max(255).optional().nullable(),
   weightKg: z.coerce.number().min(40).max(200).optional().nullable(),
   lastDonationDate: z.string().datetime().optional().nullable().or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable()),
+  totalDonations: z.coerce.number().int().min(0, 'Blood donation count cannot be negative').max(500, 'Donation count seems unusually high').optional().nullable(),
   isAvailable: z.boolean().optional(),
   readyForEmergency: z.boolean().optional(),
 });
@@ -34,6 +35,7 @@ export const updateDonorSchema = z.object({
   isAvailable: z.boolean().optional(),
   readyForEmergency: z.boolean().optional(),
   weightKg: z.coerce.number().min(40).max(200).optional().nullable(),
+  totalDonations: z.coerce.number().int().min(0, 'Blood donation count cannot be negative').max(500, 'Donation count seems unusually high').optional().nullable(),
   lastDonationDate: z.string().optional().nullable(),
   nextEligibleDate: z.string().optional().nullable(),
   ineligibilityReason: z.string().max(500).optional().nullable(),

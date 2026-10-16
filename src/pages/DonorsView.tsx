@@ -15,9 +15,10 @@ import {
   AlertCircle,
   ArrowUpDown,
   RotateCcw,
+  Edit3,
 } from 'lucide-react';
 import { api } from '../services/api';
-import { DetailedDonor, BANGLADESH_DISTRICTS, INITIAL_DONORS } from '../data/mockData';
+import { DetailedDonor, BANGLADESH_DISTRICTS } from '../data/mockData';
 import { DonorProfileModal } from './DonorProfileModal';
 import { DonorRegistrationModal } from './DonorRegistrationModal';
 
@@ -56,14 +57,10 @@ export const DonorsView: React.FC<DonorsViewProps> = ({
     setLoading(true);
     try {
       const res = await api.searchDonors({});
-      if (res && res.donors && res.donors.length > 0) {
-        setDonors(res.donors);
-      } else {
-        setDonors(INITIAL_DONORS);
-      }
+      setDonors(res?.donors || []);
     } catch (err) {
-      console.warn('⚠️ Could not load donors from API, using fallback data:', err);
-      setDonors(INITIAL_DONORS);
+      console.warn('⚠️ Could not load donors from API:', err);
+      setDonors([]);
     } finally {
       setLoading(false);
     }
@@ -382,6 +379,13 @@ export const DonorsView: React.FC<DonorsViewProps> = ({
                           >
                             <Eye className="w-4 h-4" />
                           </button>
+                          <button
+                            onClick={() => setSelectedDonor(d)}
+                            className="p-1.5 rounded-lg text-red-500 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
+                            title="Edit Donor Record"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
                           <a
                             href={`tel:${d.phone}`}
                             className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors"
@@ -440,6 +444,10 @@ export const DonorsView: React.FC<DonorsViewProps> = ({
           onClose={() => setSelectedDonor(null)}
           onBookAppointment={onBookAppointment}
           onRequestBlood={onRequestBlood}
+          onDonorUpdated={(updated) => {
+            setSelectedDonor(updated);
+            setDonors((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+          }}
         />
       )}
 

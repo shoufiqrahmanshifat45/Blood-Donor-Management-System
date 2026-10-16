@@ -1,6 +1,5 @@
 import {
   DashboardSummaryData,
-  Donor,
   SearchDonorsQuery,
   CreateDonorDto,
   BloodStockItem,
@@ -9,53 +8,25 @@ import {
   CreateAppointmentDto,
   AppointmentItem,
   ApiResponse,
+  DonationItem,
+  CreateDonationDto,
 } from '../types/api';
 
-import {
-  INITIAL_STAT_METRICS,
-  DONORS_BY_BLOOD_GROUP,
-  GENDER_DISTRIBUTION,
-  BLOOD_STOCK_DATA,
-  DONOR_REGISTRATION_TRENDS,
-  INITIAL_DONORS,
-  DetailedDonor,
-  DetailedAppointment,
-} from '../data/mockData';
+import { DetailedDonor, DetailedAppointment } from '../data/mockData';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
-// Safe in-memory read fallback baseline when PostgreSQL database is offline or not yet configured
-const FALLBACK_DASHBOARD: DashboardSummaryData = {
-  stats: INITIAL_STAT_METRICS.map((s) => ({
-    id: s.id,
-    title: s.label,
-    value: s.value,
-    change: s.trend,
-    isPositive: s.trendType === 'up',
-    comparisonText: s.trendContext,
-  })),
-  donorsByBloodGroup: DONORS_BY_BLOOD_GROUP.map((d) => ({
-    group: d.bloodGroup as any,
-    count: d.count,
-  })),
-  genderDistribution: GENDER_DISTRIBUTION.map((g) => ({
-    gender: g.name as any,
-    percentage: g.percentage,
-    count: g.count,
-    color: g.color,
-  })),
-  totalDonorsCount: '1,248',
-  bloodStock: BLOOD_STOCK_DATA.map((s, idx) => ({
-    id: String(idx + 1),
-    bloodGroup: s.bloodGroup as any,
-    availableUnits: s.units,
-    reservedUnits: 4,
-    status: (s.status === 'Low' ? 'Low' : 'Good') as any,
-    lastUpdated: 'Recently',
-  })),
-  donorRegistrationTrends: DONOR_REGISTRATION_TRENDS,
-  recentBloodRequests: [],
-};
+export class ApiError extends Error {
+  status?: number;
+  details?: Array<{ field: string; message: string }>;
+
+  constructor(message: string, status?: number, details?: any) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.details = details;
+  }
+}
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${BASE_URL}${endpoint}`;
@@ -70,27 +41,33 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     const response = await fetch(url, {
       ...options,
       headers,
-      credentials: 'include', // Automatically sends and receives HttpOnly session cookies
+      credentials: 'include', // Sends and receives HttpOnly session cookies
     });
+
     if (!response.ok) {
       const errorBody = await response.json().catch(() => ({}));
-      throw new Error(
+      const message =
         errorBody.error ||
         errorBody.message ||
-        `HTTP error ${response.status}: ${response.statusText}`
-      );
+        `HTTP error ${response.status}: ${response.statusText}`;
+      throw new ApiError(message, response.status, errorBody.details);
     }
 
     const json: ApiResponse<T> = await response.json();
     return json.data;
   } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
     // If backend server is unreachable
-    if ((error as Error).message.includes('Failed to fetch') || (error as Error).message.includes('NetworkError')) {
-      throw new Error(
-        'Unable to reach backend server. Please verify that the Express backend is running on http://localhost:5000 and PostgreSQL is accessible.'
+    const msg = (error as Error).message || '';
+    if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+      throw new ApiError(
+        'Unable to reach backend server. Please verify that the Express backend is running on http://localhost:5000 and PostgreSQL is accessible.',
+        503
       );
     }
-    throw error;
+    throw new ApiError(msg, 500);
   }
 }
 
@@ -101,7 +78,7 @@ export const api = {
   async checkHealth(): Promise<{ status: string; database: string }> {
     try {
       return await request<{ status: string; database: string }>('/health');
-    } catch (err) {
+    } catch {
       return { status: 'offline', database: 'disconnected' };
     }
   },
@@ -110,19 +87,10 @@ export const api = {
    * Fetch aggregated dashboard summary data from PostgreSQL database
    */
   async getDashboardSummary(): Promise<DashboardSummaryData> {
-    try {
-      const live = await request<DashboardSummaryData>('/dashboard');
-      if (live && live.stats) return live;
-      return FALLBACK_DASHBOARD;
-    } catch (err) {
-      console.warn('⚠️ Dashboard live query failed, showing baseline:', (err as Error).message);
-      return FALLBACK_DASHBOARD;
-    }
+    const live = await request<DashboardSummaryData>('/dashboard');
+    return live;
   },
 
-  /**
-   * Search and filter donors in PostgreSQL database
-   */
   /**
    * Search and filter donors in PostgreSQL database
    */
@@ -146,75 +114,31 @@ export const api = {
         donorsList = serverResult.donors;
       }
 
-      if (donorsList.length > 0) {
-        const normalized: DetailedDonor[] = donorsList.map((d: any) => ({
-          id: d.id,
-          name: d.name,
-          bloodGroup: d.bloodGroup,
-          gender: d.gender || 'Male',
-          age: typeof d.age === 'number' ? d.age : 25,
-          phone: d.phone,
-          email: d.email || '',
-          district: d.district || 'Dhaka',
-          thana: d.thana || 'Central',
-          lastDonationDate: d.lastDonationDate || null,
-          totalDonations: typeof d.totalDonations === 'number' ? d.totalDonations : 0,
-          status: d.status || 'Eligible',
-          weightKg: typeof d.weightKg === 'number' ? d.weightKg : 65,
-          readyForEmergency: d.readyForEmergency !== undefined ? d.readyForEmergency : true,
-          notes: d.ineligibilityReason || d.notes,
-        }));
-        return { donors: normalized, total: normalized.length };
-      }
+      const normalized: DetailedDonor[] = donorsList.map((d: any) => ({
+        id: d.id,
+        name: d.name,
+        bloodGroup: d.bloodGroup,
+        gender: d.gender || 'Male',
+        age: typeof d.age === 'number' ? d.age : 25,
+        phone: d.phone,
+        email: d.email || '',
+        district: d.district || 'Dhaka',
+        thana: d.thana || 'Central',
+        lastDonationDate: d.lastDonationDate || null,
+        totalDonations: typeof d.totalDonations === 'number' ? d.totalDonations : 0,
+        status: d.status || 'Eligible',
+        weightKg: typeof d.weightKg === 'number' ? d.weightKg : 65,
+        readyForEmergency: d.readyForEmergency !== undefined ? d.readyForEmergency : true,
+        notes: d.ineligibilityReason || d.notes,
+      }));
 
-      // If server returned 0 donors or an empty array, fall back to INITIAL_DONORS
-      let donors = [...INITIAL_DONORS];
-      if (query.bloodGroup && query.bloodGroup !== 'ALL') {
-        donors = donors.filter((d) => d.bloodGroup.toUpperCase() === query.bloodGroup?.toUpperCase());
-      }
-      if (query.district && query.district !== 'ALL') {
-        donors = donors.filter((d) => d.district.toLowerCase() === query.district?.toLowerCase());
-      }
-      if (query.thana && query.thana !== 'ALL') {
-        donors = donors.filter((d) => d.thana.toLowerCase().includes(query.thana?.toLowerCase() || ''));
-      }
-      if (query.search) {
-        const s = query.search.toLowerCase();
-        donors = donors.filter(
-          (d) =>
-            (d.name && d.name.toLowerCase().includes(s)) ||
-            (d.phone && d.phone.includes(s)) ||
-            (d.district && d.district.toLowerCase().includes(s)) ||
-            (d.thana && d.thana.toLowerCase().includes(s)) ||
-            (d.bloodGroup && d.bloodGroup.toLowerCase().includes(s))
-        );
-      }
-      return { donors, total: donors.length };
+      return {
+        donors: normalized,
+        total: serverResult?.meta?.total ?? serverResult?.total ?? normalized.length,
+      };
     } catch (error) {
-      console.warn('⚠️ Database query for donors failed, falling back to mock dataset:', (error as Error).message);
-      // Fallback to seeded demo donor list for initial preview if DB not yet connected
-      let donors = [...INITIAL_DONORS];
-      if (query.bloodGroup && query.bloodGroup !== 'ALL') {
-        donors = donors.filter((d) => d.bloodGroup.toUpperCase() === query.bloodGroup?.toUpperCase());
-      }
-      if (query.district && query.district !== 'ALL') {
-        donors = donors.filter((d) => d.district.toLowerCase() === query.district?.toLowerCase());
-      }
-      if (query.thana && query.thana !== 'ALL') {
-        donors = donors.filter((d) => d.thana.toLowerCase().includes(query.thana?.toLowerCase() || ''));
-      }
-      if (query.search) {
-        const s = query.search.toLowerCase();
-        donors = donors.filter(
-          (d) =>
-            (d.name && d.name.toLowerCase().includes(s)) ||
-            (d.phone && d.phone.includes(s)) ||
-            (d.district && d.district.toLowerCase().includes(s)) ||
-            (d.thana && d.thana.toLowerCase().includes(s)) ||
-            (d.bloodGroup && d.bloodGroup.toLowerCase().includes(s))
-        );
-      }
-      return { donors, total: donors.length };
+      console.warn('⚠️ Database query for donors failed:', (error as Error).message);
+      return { donors: [], total: 0 };
     }
   },
 
@@ -244,12 +168,11 @@ export const api = {
         };
       }
     } catch {}
-    return INITIAL_DONORS.find((d) => d.id === id) || null;
+    return null;
   },
 
   /**
    * Register a new donor into PostgreSQL database.
-   * Throws error if PostgreSQL is offline to prevent false assumption of persistence.
    */
   async createDonor(dto: CreateDonorDto): Promise<DetailedDonor> {
     const created = await request<any>('/donors', {
@@ -268,10 +191,38 @@ export const api = {
       district: created.district || dto.district,
       thana: created.thana || dto.thana,
       lastDonationDate: created.lastDonationDate || dto.lastDonationDate || null,
-      totalDonations: created.totalDonations || 0,
+      totalDonations: typeof created.totalDonations === 'number' ? created.totalDonations : (dto.totalDonations || 0),
       status: created.status || 'Eligible',
       weightKg: created.weightKg || dto.weightKg || 65,
       readyForEmergency: created.readyForEmergency !== undefined ? created.readyForEmergency : true,
+    };
+  },
+
+  /**
+   * Update existing donor profile in PostgreSQL database
+   */
+  async updateDonor(id: string, data: Partial<CreateDonorDto & { status?: string; ineligibilityReason?: string }>): Promise<DetailedDonor> {
+    const updated = await request<any>(`/donors/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+
+    return {
+      id: updated.id,
+      name: updated.name,
+      bloodGroup: updated.bloodGroup,
+      gender: updated.gender || 'Male',
+      age: typeof updated.age === 'number' ? updated.age : 25,
+      phone: updated.phone,
+      email: updated.email || '',
+      district: updated.district,
+      thana: updated.thana,
+      lastDonationDate: updated.lastDonationDate || null,
+      totalDonations: typeof updated.totalDonations === 'number' ? updated.totalDonations : 0,
+      status: updated.status || 'Eligible',
+      weightKg: typeof updated.weightKg === 'number' ? updated.weightKg : 65,
+      readyForEmergency: updated.readyForEmergency !== undefined ? updated.readyForEmergency : true,
+      notes: updated.ineligibilityReason || updated.notes,
     };
   },
 
@@ -281,10 +232,10 @@ export const api = {
   async getBloodStock(): Promise<BloodStockItem[]> {
     try {
       const stock = await request<BloodStockItem[]>('/blood-stock');
-      if (stock && stock.length > 0) return stock;
-      return FALLBACK_DASHBOARD.bloodStock;
+      if (Array.isArray(stock)) return stock;
+      return [];
     } catch {
-      return FALLBACK_DASHBOARD.bloodStock;
+      return [];
     }
   },
 
@@ -294,7 +245,7 @@ export const api = {
   async getRecentRequests(): Promise<BloodRequestItem[]> {
     try {
       const res = await request<BloodRequestItem[]>('/blood-requests');
-      if (res && res.length > 0) return res;
+      if (Array.isArray(res)) return res;
       return [];
     } catch (err) {
       console.warn('⚠️ Could not load blood requests from PostgreSQL:', (err as Error).message);
@@ -303,8 +254,37 @@ export const api = {
   },
 
   /**
+   * Query blood requests with filters from PostgreSQL
+   */
+  async getBloodRequests(query?: {
+    urgency?: string;
+    bloodGroup?: string;
+    hospital?: string;
+    requesterId?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ requests: BloodRequestItem[]; total: number }> {
+    try {
+      const params = new URLSearchParams();
+      if (query?.urgency && query.urgency !== 'ALL') params.append('urgency', query.urgency);
+      if (query?.bloodGroup && query.bloodGroup !== 'ALL') params.append('bloodGroup', query.bloodGroup);
+      if (query?.hospital) params.append('hospital', query.hospital);
+      if (query?.requesterId) params.append('requesterId', query.requesterId);
+      if (query?.page) params.append('page', String(query.page));
+      if (query?.limit) params.append('limit', String(query.limit));
+      const qs = params.toString();
+      const res = await request<any>(`/blood-requests${qs ? `?${qs}` : ''}`);
+      if (Array.isArray(res)) {
+        return { requests: res, total: res.length };
+      }
+      return { requests: res.requests || [], total: res.pagination?.total || (res.requests?.length || 0) };
+    } catch {
+      return { requests: [], total: 0 };
+    }
+  },
+
+  /**
    * Submit a new blood request to PostgreSQL.
-   * Throws error if PostgreSQL is offline.
    */
   async createBloodRequest(dto: CreateBloodRequestDto): Promise<BloodRequestItem> {
     return await request<BloodRequestItem>('/blood-requests', {
@@ -329,7 +309,7 @@ export const api = {
   async getAppointments(): Promise<DetailedAppointment[]> {
     try {
       const res = await request<DetailedAppointment[]>('/appointments');
-      if (res && res.length > 0) return res;
+      if (Array.isArray(res)) return res;
       return [];
     } catch (err) {
       console.warn('⚠️ Could not load appointments from PostgreSQL:', (err as Error).message);
@@ -339,7 +319,6 @@ export const api = {
 
   /**
    * Book a blood donation appointment in PostgreSQL.
-   * Throws error if PostgreSQL is offline.
    */
   async bookAppointment(dto: CreateAppointmentDto): Promise<DetailedAppointment> {
     const created = await request<AppointmentItem>('/appointments', {
@@ -360,12 +339,49 @@ export const api = {
   },
 
   /**
+   * Schedule appointment alias
+   */
+  async createAppointment(dto: CreateAppointmentDto): Promise<DetailedAppointment> {
+    return this.bookAppointment(dto);
+  },
+
+  /**
    * Update appointment status in PostgreSQL
    */
   async updateAppointmentStatus(id: string, status: 'Scheduled' | 'Completed' | 'Cancelled'): Promise<void> {
     await request(`/appointments/${id}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
+    });
+  },
+
+  /**
+   * Get donation records from PostgreSQL
+   */
+  async getDonations(query?: { donorId?: string; bloodGroup?: string; page?: number; limit?: number }): Promise<DonationItem[]> {
+    try {
+      const params = new URLSearchParams();
+      if (query?.donorId) params.append('donorId', query.donorId);
+      if (query?.bloodGroup && query.bloodGroup !== 'ALL') params.append('bloodGroup', query.bloodGroup);
+      if (query?.page) params.append('page', String(query.page));
+      if (query?.limit) params.append('limit', String(query.limit));
+      const qs = params.toString();
+      const res = await request<DonationItem[]>(`/donations${qs ? `?${qs}` : ''}`);
+      if (Array.isArray(res)) return res;
+      return [];
+    } catch (err) {
+      console.warn('⚠️ Could not load donations from PostgreSQL:', (err as Error).message);
+      return [];
+    }
+  },
+
+  /**
+   * Record a verified blood donation in PostgreSQL
+   */
+  async recordDonation(dto: CreateDonationDto): Promise<DonationItem> {
+    return await request<DonationItem>('/donations', {
+      method: 'POST',
+      body: JSON.stringify(dto),
     });
   },
 
@@ -422,9 +438,24 @@ export const api = {
   },
 
   /**
-   * Update profile fields (name, phone, avatarUrl)
+   * Update profile fields (name, phone, avatarUrl) and optional linked donor details
    */
-  async updateProfile(data: { name?: string; phone?: string; avatarUrl?: string }): Promise<any> {
+  async updateProfile(data: {
+    name?: string;
+    phone?: string | null;
+    avatarUrl?: string | null;
+    donor?: {
+      bloodGroup?: string;
+      gender?: string;
+      age?: number;
+      district?: string;
+      thana?: string;
+      totalDonations?: number;
+      readyForEmergency?: boolean;
+      isAvailable?: boolean;
+      weightKg?: number | null;
+    };
+  }): Promise<any> {
     return await request<any>('/auth/profile', {
       method: 'PATCH',
       body: JSON.stringify(data),
@@ -438,6 +469,65 @@ export const api = {
     return await request<{ message: string }>('/auth/change-password', {
       method: 'PATCH',
       body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  },
+
+  /**
+   * Step 1 of Organization Admin Sign In: Validates credentials and administrative eligibility,
+   * triggering a single-use verification challenge
+   */
+  async initiateOrganizationLogin(data: { email: string; password: string }): Promise<{
+    success: boolean;
+    challengeId: string;
+    maskedEmail: string;
+    expiresInSeconds: number;
+    provider: string;
+    providerConfigured: boolean;
+    message: string;
+  }> {
+    return await request<any>('/auth/organization/initiate', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Step 2 of Organization Admin Sign In: Verifies 6-digit challenge code and establishes admin session
+   */
+  async verifyOrganizationLogin(data: { challengeId: string; code: string }): Promise<{
+    user: any;
+    token: string;
+  }> {
+    const result = await request<{ user: any; token: string }>('/auth/organization/verify', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    if (result && result.token && typeof window !== 'undefined') {
+      localStorage.setItem('bdms_token', result.token);
+    }
+    return result;
+  },
+
+  /**
+   * Initiate password recovery
+   */
+  async forgotPassword(email: string): Promise<{ success: boolean; challengeId?: string; message: string }> {
+    return await request<any>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  /**
+   * Complete password recovery with verified code
+   */
+  async resetPassword(data: { challengeId: string; code: string; newPassword: string }): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    return await request<any>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   },
 };

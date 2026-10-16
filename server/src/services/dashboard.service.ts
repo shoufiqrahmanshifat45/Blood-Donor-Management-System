@@ -16,20 +16,26 @@ export class DashboardService {
       throw new ServiceUnavailableError('Database service unavailable. Cannot load dashboard metrics.');
     }
 
-    const [stocks, requests, donorCount, donationCount, bloodGroupGroups, genderGroups] = await Promise.all([
-      prisma.bloodStock.findMany({ orderBy: { bloodGroup: 'asc' } }),
-      prisma.bloodRequest.findMany({ take: 5, orderBy: { createdAt: 'desc' } }),
-      prisma.donor.count(),
-      prisma.bloodDonation.count(),
-      prisma.donor.groupBy({
-        by: ['bloodGroup'],
-        _count: { id: true },
-      }),
-      prisma.donor.groupBy({
-        by: ['gender'],
-        _count: { id: true },
-      }),
-    ]);
+    const [stocks, requests, requestCount, donorCount, donationCount, bloodGroupGroups, genderGroups, donorRecords] =
+      await Promise.all([
+        prisma.bloodStock.findMany({ orderBy: { bloodGroup: 'asc' } }),
+        prisma.bloodRequest.findMany({ take: 5, orderBy: { createdAt: 'desc' } }),
+        prisma.bloodRequest.count(),
+        prisma.donor.count(),
+        prisma.bloodDonation.count(),
+        prisma.donor.groupBy({
+          by: ['bloodGroup'],
+          _count: { id: true },
+        }),
+        prisma.donor.groupBy({
+          by: ['gender'],
+          _count: { id: true },
+        }),
+        prisma.donor.findMany({
+          select: { createdAt: true },
+          orderBy: { createdAt: 'asc' },
+        }),
+      ]);
 
     const totalUnits = stocks.reduce((sum, item) => sum + item.availableUnits, 0);
 
@@ -53,10 +59,10 @@ export class DashboardService {
       {
         id: 'blood-requests',
         title: 'Blood Requests',
-        value: requests.length.toString(),
+        value: requestCount.toString(),
         change: '5%',
         isPositive: false,
-        comparisonText: 'recent requisitions',
+        comparisonText: 'requisitions logged',
       },
       {
         id: 'available-units',
@@ -97,6 +103,39 @@ export class DashboardService {
       };
     });
 
+    // Build registration trend from real donor timestamps (last 6 months)
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const now = new Date();
+    const last6Months: { name: string; year: number; monthIdx: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      last6Months.push({
+        name: monthNames[d.getMonth()],
+        year: d.getFullYear(),
+        monthIdx: d.getMonth(),
+      });
+    }
+
+    const donorRegistrationTrends = last6Months.map((mObj) => {
+      const newDonors = donorRecords.filter((d) => {
+        const dDate = new Date(d.createdAt);
+        return dDate.getFullYear() === mObj.year && dDate.getMonth() === mObj.monthIdx;
+      }).length;
+      const totalDonors = donorRecords.filter((d) => {
+        const dDate = new Date(d.createdAt);
+        return (
+          dDate.getFullYear() < mObj.year ||
+          (dDate.getFullYear() === mObj.year && dDate.getMonth() <= mObj.monthIdx)
+        );
+      }).length;
+
+      return {
+        month: mObj.name,
+        newDonors,
+        totalDonors,
+      };
+    });
+
     const recentBloodRequests = requests.map((r) => ({
       id: r.id,
       patientName: r.patientName,
@@ -124,18 +163,7 @@ export class DashboardService {
       genderDistribution,
       totalDonorsCount: donorCount.toLocaleString(),
       bloodStock: bloodStockItems,
-      donorRegistrationTrends: [
-        { month: 'Jan', newDonors: 45, totalDonors: 75 },
-        { month: 'Feb', newDonors: 58, totalDonors: 110 },
-        { month: 'Mar', newDonors: 62, totalDonors: 140 },
-        { month: 'Apr', newDonors: 70, totalDonors: 175 },
-        { month: 'May', newDonors: 85, totalDonors: 215 },
-        { month: 'Jun', newDonors: 78, totalDonors: 250 },
-        { month: 'Jul', newDonors: 92, totalDonors: 295 },
-        { month: 'Aug', newDonors: 98, totalDonors: 340 },
-        { month: 'Sep', newDonors: 112, totalDonors: 395 },
-        { month: 'Oct', newDonors: 145, totalDonors: 470 },
-      ],
+      donorRegistrationTrends,
       recentBloodRequests,
     };
   }

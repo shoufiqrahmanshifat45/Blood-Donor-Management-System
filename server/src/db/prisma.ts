@@ -10,19 +10,37 @@ declare global {
 export const prisma =
   global.__prisma ||
   new PrismaClient({
-    log: env.IS_PRODUCTION ? ['error'] : ['query', 'error', 'warn'],
+    datasources: {
+      db: {
+        url: env.DATABASE_URL,
+      },
+    },
+    log: env.IS_PRODUCTION ? ['error'] : ['error', 'warn'],
   });
 
 if (!env.IS_PRODUCTION) {
   global.__prisma = prisma;
 }
 
-export async function checkDatabaseConnection(): Promise<boolean> {
+let lastCheckTime = 0;
+let lastCheckStatus = false;
+const CHECK_CACHE_TTL = 20000; // 20 seconds cache
+
+export async function checkDatabaseConnection(force = false): Promise<boolean> {
+  const now = Date.now();
+  if (!force && lastCheckStatus && now - lastCheckTime < CHECK_CACHE_TTL) {
+    return true;
+  }
+
   try {
     await prisma.$queryRaw`SELECT 1`;
+    lastCheckTime = Date.now();
+    lastCheckStatus = true;
     return true;
   } catch (error) {
-    console.warn('⚠️ PostgreSQL connection failed or database is not yet ready:', (error as Error).message);
+    lastCheckTime = Date.now();
+    lastCheckStatus = false;
+    console.warn('⚠️ PostgreSQL connection check:', (error as Error).message);
     return false;
   }
 }

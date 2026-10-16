@@ -12,26 +12,49 @@ import {
 import { AuthenticatedUser } from '../types/express.js';
 
 export class DonationsService {
-  async getDonations(query: {
-    donorId?: string;
-    bloodRequestId?: string;
-    bloodGroup?: string;
-    page?: number;
-    limit?: number;
-  }) {
+  async getDonations(
+    query: {
+      donorId?: string;
+      bloodRequestId?: string;
+      bloodGroup?: string;
+      page?: number;
+      limit?: number;
+    },
+    currentUser: AuthenticatedUser
+  ) {
     const isDbConnected = await checkDatabaseConnection();
     if (!isDbConnected) {
       throw new ServiceUnavailableError('Database service unavailable.');
     }
 
     const where: any = {};
-    if (query.donorId) where.donorId = query.donorId;
-    if (query.bloodRequestId) where.bloodRequestId = query.bloodRequestId;
-    if (query.bloodGroup) where.bloodGroup = toPrismaBloodGroup(query.bloodGroup);
-
     const page = query.page || 1;
     const limit = query.limit || 20;
     const skip = (page - 1) * limit;
+
+    // Strict privacy scoping: General members (DONOR, VOLUNTEER) can ONLY see their own verified donations
+    const allowedAdminRoles: Role[] = [Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.HOSPITAL_COORDINATOR];
+    const isStaffOrAdmin = allowedAdminRoles.includes(currentUser.role);
+
+    if (!isStaffOrAdmin) {
+      const linkedDonor = await prisma.donor.findUnique({
+        where: { userId: currentUser.id },
+      });
+
+      if (!linkedDonor) {
+        return {
+          donations: [],
+          pagination: { total: 0, page, limit, totalPages: 0 },
+        };
+      }
+
+      where.donorId = linkedDonor.id;
+    } else {
+      if (query.donorId) where.donorId = query.donorId;
+    }
+
+    if (query.bloodRequestId) where.bloodRequestId = query.bloodRequestId;
+    if (query.bloodGroup) where.bloodGroup = toPrismaBloodGroup(query.bloodGroup);
 
     const [donations, total] = await Promise.all([
       prisma.bloodDonation.findMany({
@@ -79,7 +102,7 @@ export class DonationsService {
     };
   }
 
-  async getDonationById(id: string) {
+  async getDonationById(id: string, currentUser: AuthenticatedUser) {
     const isDbConnected = await checkDatabaseConnection();
     if (!isDbConnected) {
       throw new ServiceUnavailableError('Database service unavailable.');
@@ -89,7 +112,7 @@ export class DonationsService {
       where: { id },
       include: {
         donor: {
-          select: { id: true, name: true, phone: true, email: true, bloodGroup: true, district: true, thana: true },
+          select: { id: true, userId: true, name: true, phone: true, email: true, bloodGroup: true, district: true, thana: true },
         },
         bloodRequest: true,
         verifiedBy: {
@@ -100,6 +123,14 @@ export class DonationsService {
 
     if (!donation) {
       throw new NotFoundError(`Donation record with ID ${id} not found.`);
+    }
+
+    const allowedAdminRoles: Role[] = [Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.HOSPITAL_COORDINATOR];
+    const isStaffOrAdmin = allowedAdminRoles.includes(currentUser.role);
+
+    if (!isStaffOrAdmin && donation.donor.userId !== currentUser.id) {
+      const { ForbiddenError } = await import('../utils/errors.js');
+      throw new ForbiddenError('Access denied: You can only view your own verified donation records.');
     }
 
     return {
@@ -212,6 +243,9 @@ export class DonationsService {
       }
 
       return record;
+    }, {
+      maxWait: 15000,
+      timeout: 30000,
     });
 
     return {

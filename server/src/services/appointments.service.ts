@@ -8,8 +8,14 @@ import {
 } from '../types/shared.js';
 import { NotFoundError, ServiceUnavailableError } from '../utils/errors.js';
 
+import { Role } from '@prisma/client';
+import { AuthenticatedUser } from '../types/express.js';
+
 export class AppointmentsService {
-  async getAppointments(query: { status?: string; date?: string; page?: number; limit?: number }) {
+  async getAppointments(
+    query: { status?: string; date?: string; page?: number; limit?: number },
+    currentUser?: AuthenticatedUser
+  ) {
     const isDbConnected = await checkDatabaseConnection();
     if (!isDbConnected) {
       throw new ServiceUnavailableError('Database service unavailable.');
@@ -21,6 +27,40 @@ export class AppointmentsService {
     }
     if (query.date) {
       where.appointmentDate = new Date(query.date);
+    }
+
+    // Role-based privacy scoping: general members see only their own appointments
+    if (currentUser) {
+      const allowedAdminRoles: Role[] = [Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.HOSPITAL_COORDINATOR];
+      const isStaffOrAdmin = allowedAdminRoles.includes(currentUser.role);
+      if (!isStaffOrAdmin) {
+        const linkedDonor = await prisma.donor.findUnique({
+          where: { userId: currentUser.id },
+        });
+
+        const userRecord = await prisma.user.findUnique({
+          where: { id: currentUser.id },
+          select: { phone: true },
+        });
+
+        const conditions: any[] = [];
+        if (linkedDonor) {
+          conditions.push({ donorId: linkedDonor.id });
+          if (linkedDonor.phone) conditions.push({ donorPhone: linkedDonor.phone });
+        }
+        if (userRecord?.phone) {
+          conditions.push({ donorPhone: userRecord.phone });
+        }
+
+        if (conditions.length > 0) {
+          where.OR = conditions;
+        } else {
+          return {
+            appointments: [],
+            pagination: { total: 0, page: 1, limit: query.limit || 30, totalPages: 0 },
+          };
+        }
+      }
     }
 
     const page = query.page || 1;
@@ -66,7 +106,7 @@ export class AppointmentsService {
     };
   }
 
-  async getAppointmentById(id: string) {
+  async getAppointmentById(id: string, currentUser?: AuthenticatedUser) {
     const isDbConnected = await checkDatabaseConnection();
     if (!isDbConnected) {
       throw new ServiceUnavailableError('Database service unavailable.');

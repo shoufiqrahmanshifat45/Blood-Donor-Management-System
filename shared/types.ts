@@ -56,6 +56,8 @@ export interface BloodRequestItem {
   timeAgo: string;
   contactPhone: string;
   notes?: string | null;
+  requiredDate?: string | null;
+  fulfilledUnits?: number;
   createdAt: string;
 }
 
@@ -68,7 +70,8 @@ export interface AppointmentItem {
   appointmentTime: string;
   location: string;
   status: AppointmentStatus;
-  createdAt: string;
+  notes?: string | null;
+  createdAt?: string;
 }
 
 export interface StatMetric {
@@ -128,7 +131,29 @@ export interface CreateDonorDto {
   address?: string;
   weightKg?: number;
   lastDonationDate?: string;
+  totalDonations?: number;
   readyForEmergency?: boolean;
+  isAvailable?: boolean;
+}
+
+export interface UpdateDonorDto {
+  name?: string;
+  bloodGroup?: BloodGroup;
+  gender?: Gender;
+  age?: number;
+  phone?: string;
+  email?: string | null;
+  district?: string;
+  thana?: string;
+  address?: string | null;
+  status?: DonorStatus;
+  isAvailable?: boolean;
+  readyForEmergency?: boolean;
+  weightKg?: number | null;
+  totalDonations?: number;
+  lastDonationDate?: string | null;
+  nextEligibleDate?: string | null;
+  ineligibilityReason?: string | null;
 }
 
 export interface CreateBloodRequestDto {
@@ -148,6 +173,7 @@ export interface CreateAppointmentDto {
   appointmentDate: string;
   appointmentTime: string;
   location: string;
+  notes?: string;
 }
 
 export interface SearchDonorsQuery {
@@ -157,6 +183,34 @@ export interface SearchDonorsQuery {
   search?: string;
   page?: number;
   limit?: number;
+}
+
+export interface DonationItem {
+  id: string;
+  donorId: string;
+  donorName?: string;
+  bloodRequestId?: string | null;
+  bloodGroup: BloodGroup;
+  units: number;
+  donationDate: string;
+  location: string;
+  notes?: string | null;
+  verifiedById?: string | null;
+  verifiedBy?: {
+    id: string;
+    name: string;
+    role: string;
+  } | null;
+}
+
+export interface CreateDonationDto {
+  donorId: string;
+  bloodRequestId?: string;
+  bloodGroup: BloodGroup;
+  units?: number;
+  donationDate?: string;
+  location: string;
+  notes?: string;
 }
 
 // ==========================================

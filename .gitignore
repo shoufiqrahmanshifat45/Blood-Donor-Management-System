@@ -21,6 +21,7 @@ dist-ssr
 # Temporary test scripts
 test_*.mjs
 preview_*.mjs
+scratch/
 
 
 # Editor directories and files

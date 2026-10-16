@@ -20,6 +20,7 @@ export class BloodRequestsService {
     urgency?: string;
     bloodGroup?: string;
     hospital?: string;
+    requesterId?: string;
     page?: number;
     limit?: number;
   }) {
@@ -37,6 +38,9 @@ export class BloodRequestsService {
     }
     if (query.hospital) {
       where.hospital = { contains: query.hospital, mode: 'insensitive' };
+    }
+    if (query.requesterId) {
+      where.requesterId = query.requesterId;
     }
 
     const page = query.page || 1;

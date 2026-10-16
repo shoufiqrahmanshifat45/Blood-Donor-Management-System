@@ -10,6 +10,7 @@ import {
   ServiceUnavailableError,
   UnauthorizedError,
 } from '../utils/errors.js';
+import { toPrismaBloodGroup, toPrismaGender } from '../types/shared.js';
 
 export interface RegisterInput {
   name: string;
@@ -53,7 +54,7 @@ export class AuthService {
         email: normalizedEmail,
         password: passwordHash,
         phone: data.phone?.trim() || null,
-        role: data.role || Role.DONOR,
+        role: Role.DONOR, // Public registrations are strictly assigned Role.DONOR. Admin/staff accounts must be provisioned internally.
         isActive: true,
       },
       select: {
@@ -172,31 +173,72 @@ export class AuthService {
   }
 
   /**
-   * Update profile fields (name, phone, avatarUrl)
+   * Update profile fields (name, phone, avatarUrl) and optional linked donor profile
    */
-  async updateProfile(userId: string, data: { name?: string; phone?: string | null; avatarUrl?: string | null }) {
+  async updateProfile(
+    userId: string,
+    data: {
+      name?: string;
+      phone?: string | null;
+      avatarUrl?: string | null;
+      donor?: {
+        bloodGroup?: string;
+        gender?: string;
+        age?: number;
+        district?: string;
+        thana?: string;
+        totalDonations?: number;
+        readyForEmergency?: boolean;
+        isAvailable?: boolean;
+        weightKg?: number | null;
+      };
+    }
+  ) {
     const isDbConnected = await checkDatabaseConnection();
     if (!isDbConnected) {
       throw new ServiceUnavailableError('Database unavailable.');
     }
 
-    return prisma.user.update({
+    // Update User core fields
+    await prisma.user.update({
       where: { id: userId },
       data: {
         ...(data.name ? { name: data.name.trim() } : {}),
         ...(data.phone !== undefined ? { phone: data.phone?.trim() || null } : {}),
         ...(data.avatarUrl !== undefined ? { avatarUrl: data.avatarUrl } : {}),
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        phone: true,
-        avatarUrl: true,
-        updatedAt: true,
-      },
     });
+
+    // If donor details provided, update linked donor profile
+    if (data.donor) {
+      const existingDonor = await prisma.donor.findUnique({
+        where: { userId },
+      });
+
+      if (existingDonor) {
+        const donorUpdate: any = {};
+        if (data.name) donorUpdate.name = data.name.trim();
+        if (data.phone !== undefined) donorUpdate.phone = data.phone?.trim() || existingDonor.phone;
+        if (data.donor.bloodGroup) donorUpdate.bloodGroup = toPrismaBloodGroup(data.donor.bloodGroup);
+        if (data.donor.gender) donorUpdate.gender = toPrismaGender(data.donor.gender);
+        if (data.donor.age) donorUpdate.age = data.donor.age;
+        if (data.donor.district) donorUpdate.district = data.donor.district.trim();
+        if (data.donor.thana) donorUpdate.thana = data.donor.thana.trim();
+        if (data.donor.weightKg !== undefined) donorUpdate.weightKg = data.donor.weightKg;
+        if (data.donor.totalDonations !== undefined) {
+          donorUpdate.totalDonations = Math.max(0, parseInt(String(data.donor.totalDonations), 10) || 0);
+        }
+        if (data.donor.readyForEmergency !== undefined) donorUpdate.readyForEmergency = data.donor.readyForEmergency;
+        if (data.donor.isAvailable !== undefined) donorUpdate.isAvailable = data.donor.isAvailable;
+
+        await prisma.donor.update({
+          where: { id: existingDonor.id },
+          data: donorUpdate,
+        });
+      }
+    }
+
+    return this.getProfile(userId);
   }
 
   /**

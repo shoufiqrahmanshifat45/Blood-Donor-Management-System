@@ -74,27 +74,33 @@ enum NotificationType {
   STOCK_ALERT
 }
 
+enum VerificationPurpose {
+  ADMIN_LOGIN
+  PASSWORD_RESET
+}
+
 // ==========================================
 // Models
 // ==========================================
 
 /// System user accounts and authentication roles
 model User {
-  id                String          @id @default(uuid())
-  email             String          @unique
-  password          String          // Hashed password
-  name              String
-  role              Role            @default(ADMIN)
-  phone             String?
-  avatarUrl         String?
-  isActive          Boolean         @default(true)
-  lastLoginAt       DateTime?
-  donorProfile      Donor?
-  bloodRequests     BloodRequest[]  @relation("UserBloodRequests")
-  notifications     Notification[]
-  verifiedDonations BloodDonation[] @relation("VerifiedDonations")
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  id                     String                  @id @default(uuid())
+  email                  String                  @unique
+  password               String                  // Hashed password
+  name                   String
+  role                   Role                    @default(DONOR)
+  phone                  String?
+  avatarUrl              String?
+  isActive               Boolean                 @default(true)
+  lastLoginAt            DateTime?
+  donorProfile           Donor?
+  bloodRequests          BloodRequest[]          @relation("UserBloodRequests")
+  notifications          Notification[]
+  verifiedDonations      BloodDonation[]         @relation("VerifiedDonations")
+  verificationChallenges VerificationChallenge[]
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
 
   @@index([role])
   @@map("users")
@@ -270,4 +276,22 @@ model playing_with_neon {
   id    Int    @id @default(autoincrement())
   name  String
   value Float? @db.Real
+}
+
+/// Organization verification and password recovery security challenges
+model VerificationChallenge {
+  id          String              @id @default(uuid())
+  userId      String
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash    String              // Cryptographically hashed verification code
+  purpose     VerificationPurpose @default(ADMIN_LOGIN)
+  expiresAt   DateTime
+  attempts    Int                 @default(0)
+  maxAttempts Int                 @default(5)
+  isUsed      Boolean             @default(false)
+  createdAt   DateTime            @default(now())
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
+  @@map("verification_challenges")
 }

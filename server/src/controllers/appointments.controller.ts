@@ -6,7 +6,7 @@ const appointmentsService = new AppointmentsService();
 export class AppointmentsController {
   async getAppointments(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await appointmentsService.getAppointments(req.query as any);
+      const result = await appointmentsService.getAppointments(req.query as any, req.user);
       res.status(200).json({
         success: true,
         data: result.appointments,
@@ -19,7 +19,7 @@ export class AppointmentsController {
 
   async getAppointmentById(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await appointmentsService.getAppointmentById(req.params.id);
+      const result = await appointmentsService.getAppointmentById(req.params.id, req.user);
       res.status(200).json({
         success: true,
         data: result,

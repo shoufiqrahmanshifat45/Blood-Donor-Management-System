@@ -93,4 +93,90 @@ export class AuthController {
       next(error);
     }
   }
+
+  /**
+   * Initiate organization admin sign-in challenge
+   */
+  async initiateOrganizationLogin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { verificationService } = await import('../services/verification.service.js');
+      const result = await verificationService.initiateAdminVerification(req.body);
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Complete organization admin verification challenge
+   */
+  async verifyOrganizationLogin(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { verificationService } = await import('../services/verification.service.js');
+      const result = await verificationService.verifyAdminChallenge(req.body);
+
+      // Set secure HttpOnly session cookie
+      res.cookie(AUTH_COOKIE_NAME, result.token, getAuthCookieOptions());
+
+      res.status(200).json({
+        success: true,
+        data: result,
+        message: 'Organization verification successful. Welcome back.',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Request password reset code
+   */
+  async initiatePasswordReset(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { verificationService } = await import('../services/verification.service.js');
+      const result = await verificationService.initiatePasswordReset(req.body.email);
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Complete password reset with code
+   */
+  async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { verificationService } = await import('../services/verification.service.js');
+      const result = await verificationService.resetPassword(req.body);
+      res.status(200).json({
+        success: true,
+        message: result.message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Local development test helper for integration scripts (disabled in production)
+   */
+  async getDevCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (process.env.NODE_ENV !== 'development') {
+        return res.status(404).json({ success: false, error: 'Endpoint not found.' });
+      }
+      const { verificationService } = await import('../services/verification.service.js');
+      const code = verificationService.getDevCodeForTest(req.params.challengeId);
+      res.status(200).json({ success: true, code });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
+

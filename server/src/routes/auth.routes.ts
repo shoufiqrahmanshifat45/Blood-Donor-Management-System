@@ -8,6 +8,10 @@ import {
   loginSchema,
   updateProfileSchema,
   changePasswordSchema,
+  organizationInitiateSchema,
+  organizationVerifySchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from '../validation/auth.schema.js';
 
 const router = Router();
@@ -17,6 +21,37 @@ const controller = new AuthController();
 router.post('/register', authLimiter, validate({ body: registerSchema }), controller.register);
 router.post('/login', authLimiter, validate({ body: loginSchema }), controller.login);
 router.post('/logout', controller.logout);
+
+// Organization Admin 2FA verification challenge routes
+router.post(
+  '/organization/initiate',
+  authLimiter,
+  validate({ body: organizationInitiateSchema }),
+  controller.initiateOrganizationLogin
+);
+router.post(
+  '/organization/verify',
+  authLimiter,
+  validate({ body: organizationVerifySchema }),
+  controller.verifyOrganizationLogin
+);
+
+// Password recovery routes
+router.post(
+  '/forgot-password',
+  authLimiter,
+  validate({ body: forgotPasswordSchema }),
+  controller.initiatePasswordReset
+);
+router.post(
+  '/reset-password',
+  authLimiter,
+  validate({ body: resetPasswordSchema }),
+  controller.resetPassword
+);
+
+// Development test challenge reader (only active in development)
+router.get('/dev-code/:challengeId', controller.getDevCode);
 
 // Protected routes
 router.get('/me', authenticate, controller.getCurrentUser);

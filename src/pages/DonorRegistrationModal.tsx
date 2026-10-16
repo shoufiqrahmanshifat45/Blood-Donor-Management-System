@@ -27,6 +27,7 @@ export const DonorRegistrationModal: React.FC<DonorRegistrationModalProps> = ({
   const [email, setEmail] = useState('');
   const [district, setDistrict] = useState('Dhaka');
   const [thana, setThana] = useState('Dhanmondi');
+  const [totalDonations, setTotalDonations] = useState<string>('0');
   const [lastDonationDate, setLastDonationDate] = useState('');
   const [weightKg, setWeightKg] = useState<string>('65');
   const [readyForEmergency, setReadyForEmergency] = useState(true);
@@ -59,6 +60,10 @@ export const DonorRegistrationModal: React.FC<DonorRegistrationModalProps> = ({
     if (!weightKg || isNaN(weightNum) || weightNum < 45) {
       newErrors.weightKg = 'Minimum donor weight is 45 kg (99 lbs)';
     }
+    const donationsNum = parseInt(totalDonations, 10);
+    if (isNaN(donationsNum) || donationsNum < 0) {
+      newErrors.totalDonations = 'Please enter a valid donation count (0 or higher)';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -71,6 +76,7 @@ export const DonorRegistrationModal: React.FC<DonorRegistrationModalProps> = ({
     setIsSubmitting(true);
     try {
       const weightNum = parseFloat(weightKg);
+      const donationsNum = parseInt(totalDonations, 10);
       await api.createDonor({
         name: name.trim(),
         bloodGroup,
@@ -80,6 +86,7 @@ export const DonorRegistrationModal: React.FC<DonorRegistrationModalProps> = ({
         email: email.trim() || undefined,
         district,
         thana,
+        totalDonations: !isNaN(donationsNum) ? donationsNum : 0,
         weightKg: !isNaN(weightNum) ? weightNum : 65,
         readyForEmergency,
         lastDonationDate: lastDonationDate || undefined,
@@ -96,9 +103,18 @@ export const DonorRegistrationModal: React.FC<DonorRegistrationModalProps> = ({
       setName('');
       setPhone('');
       setEmail('');
+      setTotalDonations('0');
+      setLastDonationDate('');
       setErrors({});
-    } catch (err) {
-      error('Registration Failed', (err as Error).message || 'Unable to register donor');
+    } catch (err: any) {
+      if (err.details && Array.isArray(err.details)) {
+        const fieldErrors: Record<string, string> = {};
+        err.details.forEach((d: any) => {
+          if (d.field) fieldErrors[d.field] = d.message;
+        });
+        setErrors(fieldErrors);
+      }
+      error('Registration Failed', err.message || 'Unable to register donor');
     } finally {
       setIsSubmitting(false);
     }
@@ -290,17 +306,39 @@ export const DonorRegistrationModal: React.FC<DonorRegistrationModalProps> = ({
             </div>
           </div>
 
-          {/* Last Donation Date */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Last Blood Donation Date (Leave empty if first time)
-            </label>
-            <input
-              type="date"
-              value={lastDonationDate}
-              onChange={(e) => setLastDonationDate(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
-            />
+          {/* Blood Donation Count & Last Donation Date */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Previous Blood Donation Count <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="500"
+                value={totalDonations}
+                onChange={(e) => setTotalDonations(e.target.value)}
+                placeholder="0"
+                className={`w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-800/60 border ${
+                  errors.totalDonations ? 'border-red-500' : 'border-slate-200 dark:border-slate-700/80'
+                } text-slate-900 dark:text-white focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all font-semibold`}
+              />
+              <p className="text-[10.5px] text-slate-400 mt-1">Times donated previously (0 if first-time donor)</p>
+              {errors.totalDonations && <p className="text-[11px] text-red-500 mt-1">{errors.totalDonations}</p>}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                Last Blood Donation Date
+              </label>
+              <input
+                type="date"
+                value={lastDonationDate}
+                onChange={(e) => setLastDonationDate(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
+              />
+              <p className="text-[10.5px] text-slate-400 mt-1">Leave empty if first-time donor</p>
+            </div>
           </div>
 
           {/* Ready for emergency checkbox */}

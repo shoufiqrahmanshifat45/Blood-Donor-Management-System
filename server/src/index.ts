@@ -1,12 +1,16 @@
 import { app } from './app.js';
 import { env } from './config/env.js';
 import { checkDatabaseConnection } from './db/prisma.js';
+import { bootstrapSuperAdmin } from './db/bootstrapAdmin.js';
 
 const server = app.listen(env.PORT, async () => {
   console.log(`🚀 Blood Donor Backend running on http://localhost:${env.PORT}`);
   console.log(`📡 Environment: ${env.NODE_ENV}`);
   const isConnected = await checkDatabaseConnection();
   console.log(`🗄️ PostgreSQL status: ${isConnected ? 'Connected ✅' : 'Disconnected ⚠️'}`);
+  if (isConnected) {
+    await bootstrapSuperAdmin();
+  }
 });
 
 // Graceful shutdown handling

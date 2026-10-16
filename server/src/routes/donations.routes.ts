@@ -9,9 +9,9 @@ import { idParamSchema } from '../validation/donor.schema.js';
 const router = Router();
 const controller = new DonationsController();
 
-// List donations (optional query filters)
-router.get('/', validate({ query: donationQuerySchema }), controller.getDonations);
-router.get('/:id', validate({ params: idParamSchema }), controller.getDonationById);
+// List donations (authenticated: general members see only their own, admin/staff see all)
+router.get('/', authenticate, validate({ query: donationQuerySchema }), controller.getDonations);
+router.get('/:id', authenticate, validate({ params: idParamSchema }), controller.getDonationById);
 
 // Record verified donation (authorized: STAFF, ADMIN, SUPER_ADMIN)
 router.post(
