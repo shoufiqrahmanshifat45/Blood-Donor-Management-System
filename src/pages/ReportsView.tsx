@@ -17,7 +17,6 @@ import { useNotification } from '../context/NotificationContext';
 import { useDashboardData } from '../hooks/useDashboardData';
 import { generateReportPDF } from '../utils/pdfExport';
 import { ChartSkeleton, TableSkeleton } from '../components/common/LoadingSkeleton';
-import { RealTimeClock } from '../components/common/RealTimeClock';
 
 export const ReportsView: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'30d' | '90d' | 'year' | 'all'>('30d');
@@ -39,7 +38,7 @@ export const ReportsView: React.FC = () => {
     try {
       generateReportPDF({
         timeRange,
-        adminName: 'BDMS Administrator',
+        adminName: 'RedPulse Administrator',
       });
       success('Report Exported', 'The report PDF has been downloaded successfully.');
     } catch (err) {
@@ -62,7 +61,6 @@ export const ReportsView: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto shrink-0">
-          <RealTimeClock variant="compact" />
           <button
             onClick={refresh}
             className="p-2 bg-white dark:bg-[#0c1527] border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"

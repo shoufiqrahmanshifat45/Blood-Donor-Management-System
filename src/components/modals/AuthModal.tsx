@@ -163,7 +163,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         role: registerForm.role,
         password: registerForm.password,
       });
-      success('Account Registered', 'Welcome to Blood Donor Management System!');
+      success('Account Registered', 'Welcome to RedPulse!');
       setMode('profile');
       onClose();
     } catch (err: any) {
@@ -659,7 +659,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     onChange={(e) =>
                       setLoginForm({ ...loginForm, email: e.target.value })
                     }
-                    placeholder="shoufiq.shifat@bdms.org"
+                    placeholder="shoufiq.shifat@redpulse.org"
                     className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs md:text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
                   />
                 </div>

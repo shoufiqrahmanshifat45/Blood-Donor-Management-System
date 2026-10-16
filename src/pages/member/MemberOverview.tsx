@@ -16,7 +16,6 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import { DonationItem, BloodRequestItem, AppointmentItem } from '../../types/api';
-import { RealTimeClock } from '../../components/common/RealTimeClock';
 
 export const MemberOverview: React.FC = () => {
   const { user } = useAuth();
@@ -68,9 +67,6 @@ export const MemberOverview: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <RealTimeClock />
-        </div>
       </div>
 
       {/* Welcome Banner */}

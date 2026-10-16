@@ -46,10 +46,14 @@ export const PublicFooter: React.FC = () => {
           {/* Brand Info */}
           <div className="lg:col-span-2 space-y-4">
             <Link to="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-red-600 to-rose-600 flex items-center justify-center text-white shadow-md shadow-red-500/20">
-                <Droplet className="w-6 h-6 fill-white" />
+              <div className="w-10 h-10 rounded-2xl bg-white p-1 flex items-center justify-center shadow-md shadow-red-500/10 border border-slate-700">
+                <img
+                  src="/logo.png"
+                  alt="RedPulse Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
-              <span className="text-xl font-bold text-white tracking-tight">BloodLine BDMS</span>
+              <span className="text-xl font-bold text-white tracking-tight">RedPulse</span>
             </Link>
             <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
               Empowering voluntary blood donors and hospitals across Bangladesh with secure, real-time matching, verified donation tracking, and emergency coordination.
@@ -173,7 +177,7 @@ export const PublicFooter: React.FC = () => {
         {/* Bottom Credits & Disclaimer */}
         <div className="mt-12 pt-8 border-t border-slate-800 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>
-            &copy; {new Date().getFullYear()} BloodLine Donor Management System. All rights reserved.
+            &copy; {new Date().getFullYear()} RedPulse. All rights reserved.
           </p>
           <p className="flex items-center gap-1">
             Built with <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" /> for voluntary community blood donation in Bangladesh.

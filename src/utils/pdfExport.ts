@@ -6,6 +6,7 @@ import {
   DONOR_REGISTRATION_TRENDS,
   RECENT_BLOOD_REQUESTS,
 } from '../data/mockData';
+import { redPulseLogoBase64 } from '../assets/logoBase64';
 
 export interface ReportExportOptions {
   timeRange: '30d' | '90d' | 'year' | 'all';
@@ -43,16 +44,29 @@ export function generateReportPDF(options: ReportExportOptions): void {
   doc.setFillColor(220, 38, 38); // #dc2626
   doc.rect(0, 0, pageWidth, 5, 'F');
 
-  // Header Title
+  // Official Logo Embedding (Heart / ECG / Blood drop)
+  try {
+    doc.addImage(redPulseLogoBase64, 'JPEG', margin, 8.5, 16, 16);
+  } catch (err) {
+    console.warn('Could not embed logo in PDF:', err);
+  }
+
+  // Header Title & Brand
+  const titleLeft = margin + 18.5;
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(18);
   doc.setTextColor(220, 38, 38);
-  doc.text('BLOOD DONOR MANAGEMENT SYSTEM', margin, 17);
+  doc.text('RedPulse', titleLeft, 15);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(15, 23, 42);
+  doc.text('CENTRAL BLOOD DONOR MANAGEMENT & INVENTORY NETWORK', titleLeft, 19.5);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  doc.setTextColor(71, 85, 105);
-  doc.text('Official Inventory, Demographics & Trajectory Audit Report', margin, 22.5);
+  doc.setFontSize(7.5);
+  doc.setTextColor(100, 116, 139);
+  doc.text('Every Beat Saves a Life • Official Demographics & Trajectory Audit Report', titleLeft, 24);
 
   // Metadata Block (Right-aligned)
   doc.setFontSize(8);
@@ -301,9 +315,18 @@ export function generateReportPDF(options: ReportExportOptions): void {
     margin: { left: margin, right: margin },
   });
 
+  // Document properties
+  doc.setProperties({
+    title: `RedPulse Management & Inventory Report - ${periodLabel}`,
+    subject: 'RedPulse Blood Donor & Inventory Trajectory Audit Report',
+    author: adminName,
+    keywords: 'RedPulse, blood donation, inventory audit, healthcare',
+    creator: 'RedPulse Healthcare Administration',
+  });
+
   // Footer on all pages
   const totalPages = doc.getNumberOfPages();
-  const reportRef = `BDMS-RPT-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
+  const reportRef = `REDPULSE-RPT-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
@@ -319,7 +342,7 @@ export function generateReportPDF(options: ReportExportOptions): void {
     doc.setTextColor(148, 163, 184);
 
     doc.text(
-      'CONFIDENTIAL - Blood Donor Management System (BDMS) • Certified Healthcare Administration Document',
+      'CONFIDENTIAL - RedPulse Voluntary Blood Donor & Healthcare Management Platform',
       margin,
       pageHeight - 6.5
     );
@@ -334,5 +357,5 @@ export function generateReportPDF(options: ReportExportOptions): void {
 
   // Trigger browser PDF download
   const dateFile = new Date().toISOString().split('T')[0];
-  doc.save(`BDMS_Report_${dateFile}.pdf`);
+  doc.save(`RedPulse_Report_${dateFile}.pdf`);
 }

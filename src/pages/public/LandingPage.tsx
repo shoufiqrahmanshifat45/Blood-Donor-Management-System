@@ -20,7 +20,6 @@ import {
 import { api } from '../../services/api';
 import { BANGLADESH_DISTRICTS } from '../../data/mockData';
 import { BloodRequestItem } from '../../types/api';
-import { RealTimeClock } from '../../components/common/RealTimeClock';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
@@ -94,15 +93,13 @@ export const LandingPage: React.FC = () => {
                   <Sparkles className="w-3.5 h-3.5 text-red-500" />
                   <span>Bangladesh Central Voluntary Blood Donation Network</span>
                 </div>
-                <RealTimeClock variant="hero" />
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1]">
-                Every Drop Counts.{' '}
+                Every Beat{' '}
                 <span className="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 bg-clip-text text-transparent">
-                  Every Donor
-                </span>{' '}
-                Is A Hero.
+                  Saves a Life
+                </span>
               </h1>
 
               <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
@@ -275,7 +272,6 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <RealTimeClock variant="compact" />
             <Link
               to="/blood-requests"
               className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 dark:text-red-400 hover:text-red-700 transition-colors"
@@ -367,7 +363,7 @@ export const LandingPage: React.FC = () => {
               Simple & Transparent
             </h2>
             <h3 className="text-3xl font-extrabold text-slate-900 dark:text-white">
-              How BloodLine Works
+              How RedPulse Works
             </h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
               Our 4-step coordination lifecycle ensures safe donation, donor protection, and rapid hospital fulfillment.

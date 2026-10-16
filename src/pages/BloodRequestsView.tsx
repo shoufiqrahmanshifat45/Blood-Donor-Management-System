@@ -17,7 +17,6 @@ import {
 import { api } from '../services/api';
 import { BloodRequestItem, BloodGroup, RequestUrgency } from '../types/api';
 import { useNotification } from '../context/NotificationContext';
-import { RealTimeClock } from '../components/common/RealTimeClock';
 
 interface BloodRequestsViewProps {
   onFindDonor?: (bloodGroup: string) => void;
@@ -149,7 +148,6 @@ export const BloodRequestsView: React.FC<BloodRequestsViewProps> = ({ onFindDono
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          <RealTimeClock variant="compact" />
           <button
             onClick={() => setIsModalOpen(true)}
             className="custom-accent-btn inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#ef4444] text-white shadow-md shadow-red-500/25 hover:bg-red-600 transition-colors"

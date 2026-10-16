@@ -64,12 +64,16 @@ export const MemberLayout: React.FC = () => {
               </button>
 
               <Link to="/member/dashboard" className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-red-600 to-rose-600 text-white flex items-center justify-center shadow-md shadow-red-500/20">
-                  <Droplet className="w-5 h-5 fill-white stroke-white" />
+                <div className="w-9 h-9 rounded-xl bg-white dark:bg-slate-900 p-0.5 flex items-center justify-center shadow-md shadow-red-500/10 border border-slate-200/50 dark:border-slate-800">
+                  <img
+                    src="/logo.png"
+                    alt="RedPulse Logo"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
                 <div>
                   <span className="font-extrabold text-slate-900 dark:text-white tracking-tight">
-                    BloodLine
+                    RedPulse
                   </span>
                   <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 dark:bg-red-950/70 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900">
                     Member Portal

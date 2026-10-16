@@ -72,11 +72,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onTabChange }) => 
           <BloodDonorBrandLogo className="w-9 h-9" />
         </div>
         <div className="min-w-0">
-          <h1 className="text-[#0f172a] dark:text-white font-bold text-[15px] leading-tight tracking-tight truncate">
-            Blood Donor
+          <h1 className="text-[#0f172a] dark:text-white font-bold text-[16px] leading-tight tracking-tight truncate">
+            RedPulse
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-[11px] font-normal truncate mt-0.5">
-            Management System
+            Management Portal
           </p>
         </div>
       </div>

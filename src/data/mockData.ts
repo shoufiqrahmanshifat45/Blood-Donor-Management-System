@@ -604,7 +604,7 @@ export const HELP_FAQS = [
     answer: 'The actual blood collection takes only 8–10 minutes. The entire appointment including mini-health screening and refreshments takes about 30–45 minutes.',
   },
   {
-    question: 'How does the Blood Donor Management System help during emergencies?',
+    question: 'How does RedPulse help during emergencies?',
     answer: 'Our Emergency Blood Request feature allows verified coordinators to broadcast SOS alerts instantly to registered donors matching the patient’s exact blood group and location radius.',
   },
   {

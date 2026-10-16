@@ -109,7 +109,7 @@ export const PublicRegisterDonor: React.FC = () => {
           <CheckCircle className="w-10 h-10" />
         </div>
         <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">
-          Welcome to the BloodLine Donor Network!
+          Welcome to the RedPulse Voluntary Donor Network!
         </h2>
         <p className="text-slate-600 dark:text-slate-300 mt-3 text-base">
           Your voluntary donor registration has been recorded in the central database. When patients or hospitals in {thana}, {district} search for {bloodGroup} blood, your readiness helps save lives.

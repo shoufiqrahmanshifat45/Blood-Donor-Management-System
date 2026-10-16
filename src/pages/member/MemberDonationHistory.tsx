@@ -66,7 +66,7 @@ export const MemberDonationHistory: React.FC = () => {
               Lifetime Verified Contributions
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400">
-              Registered blood donor: <span className="font-semibold text-red-600 dark:text-red-400">{user?.donorProfile?.bloodGroup || 'BDMS Donor'}</span>
+              Registered blood donor: <span className="font-semibold text-red-600 dark:text-red-400">{user?.donorProfile?.bloodGroup || 'RedPulse Donor'}</span>
             </div>
           </div>
         </div>

@@ -81,7 +81,7 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'signup' }> = ({ initi
           password,
           phone: phone.trim() || undefined,
         });
-        success('Account Created!', 'Welcome to the BloodLine General Member Portal.');
+        success('Account Created!', 'Welcome to the RedPulse General Member Portal.');
         navigate('/member/dashboard', { replace: true });
       }
     } catch (err: any) {
@@ -99,12 +99,16 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'signup' }> = ({ initi
         {/* Brand Header */}
         <div className="text-center">
           <Link to="/" className="inline-flex items-center gap-2.5 group">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-600 to-rose-600 flex items-center justify-center text-white shadow-lg shadow-red-500/25 group-hover:scale-105 transition-all">
-              <Droplet className="w-7 h-7 fill-white stroke-white" />
+            <div className="w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 p-1 flex items-center justify-center shadow-lg shadow-red-500/10 group-hover:scale-105 transition-all border border-slate-200 dark:border-slate-800">
+              <img
+                src="/logo.png"
+                alt="RedPulse Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
           </Link>
           <h2 className="mt-3 text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            BloodLine Portal Access
+            RedPulse Portal Access
           </h2>
           <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
             Select your account type to proceed

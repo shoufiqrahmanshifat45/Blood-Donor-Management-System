@@ -13,7 +13,6 @@ import { QuickActions } from '../../components/dashboard/QuickActions';
 import { BloodGroupSearch } from '../../components/dashboard/BloodGroupSearch';
 import { ActionModals } from '../../components/modals/ActionModals';
 import { useNotification } from '../../context/NotificationContext';
-import { RealTimeClock } from '../../components/common/RealTimeClock';
 import { useDashboardData } from '../../hooks/useDashboardData';
 import {
   StatCardSkeleton,
@@ -190,9 +189,6 @@ export const AdminDashboard: React.FC = () => {
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             </button>
-
-            {/* Real Date and Time Feature */}
-            <RealTimeClock />
           </div>
         </div>
 

@@ -61,10 +61,16 @@ export const OrganizationSignIn: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center mx-auto shadow-md shadow-amber-500/10">
-            <ShieldAlert className="w-7 h-7" />
-          </div>
-          <h2 className="mt-4 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          <Link to="/" className="inline-flex items-center gap-2 mb-3">
+            <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-900 p-1 flex items-center justify-center shadow-md shadow-red-500/10 border border-slate-200 dark:border-slate-800">
+              <img
+                src="/logo.png"
+                alt="RedPulse Logo"
+                className="w-full h-full object-contain"
+              />
+            </div>
+          </Link>
+          <h2 className="mt-2 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Organization Staff Portal
           </h2>
           <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
@@ -102,7 +108,7 @@ export const OrganizationSignIn: React.FC = () => {
                 <input
                   type="email"
                   required
-                  placeholder="admin@bloodline.org or staff@hospital.bd"
+                  placeholder="admin@redpulse.org or staff@hospital.bd"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30"

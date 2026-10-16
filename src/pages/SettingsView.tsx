@@ -37,7 +37,6 @@ import { HELP_FAQS, INITIAL_DONORS, RECENT_BLOOD_REQUESTS, BLOOD_STOCK_DATA } fr
 import { useTheme } from '../context/ThemeContext';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
-import { RealTimeClock } from '../components/common/RealTimeClock';
 
 export const SettingsView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
@@ -54,9 +53,9 @@ export const SettingsView: React.FC = () => {
   const [adminProfile, setAdminProfile] = useState({
     name: user?.name || 'Shoufiq Rahman Shifat',
     role: user?.role ? user.role.replace('_', ' ') : 'System Administrator & Coordinator',
-    email: user?.email || 'shoufiq.shifat@bdms.org',
+    email: user?.email || 'shoufiq.shifat@redpulse.org',
     phone: user?.phone || '+880 1711-892451',
-    organization: 'Blood Donor Management Network Bangladesh',
+    organization: 'RedPulse Voluntary Blood Network Bangladesh',
     bloodGroup: user?.donorProfile?.bloodGroup || 'B+',
     bio: 'Lead coordinator overseeing national blood reserve logistics, donor matching algorithms, and emergency dispatch.',
   });
@@ -214,7 +213,7 @@ export const SettingsView: React.FC = () => {
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(backupData, null, 2));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `BDMS_Database_Backup_${new Date().toISOString().split('T')[0]}.json`);
+    downloadAnchor.setAttribute('download', `RedPulse_Database_Backup_${new Date().toISOString().split('T')[0]}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -246,7 +245,6 @@ export const SettingsView: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto shrink-0">
-          <RealTimeClock variant="compact" />
           {/* Tab Switcher */}
           <div className="flex items-center gap-1 p-1 bg-white dark:bg-[#0c1527] border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-x-auto max-w-full">
           <button
