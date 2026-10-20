@@ -144,7 +144,7 @@ export const OrganizationSignIn: React.FC = () => {
                   type="button"
                   onClick={() => {
                     setEmail('shoufiqrahmanshifat2021@gmail.com');
-                    setPassword('Admin123!');
+                    setPassword('AdminPassword123!');
                   }}
                   className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] transition-colors"
                 >

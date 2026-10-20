@@ -17,6 +17,8 @@ import {
   NotificationType,
 } from '@prisma/client';
 
+import bcrypt from 'bcryptjs';
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -42,13 +44,15 @@ async function main() {
   await prisma.user.deleteMany();
   await prisma.systemMetric.deleteMany();
 
-  // 1. Seed System Users & Roles
+  // 1. Seed System Users & Roles with proper bcrypt hashes
   console.log('\n[1/8] Seeding User Accounts & Roles...');
+  const defaultPasswordHash = await bcrypt.hash('AdminPassword123!', 10);
+
   const superAdmin = await prisma.user.create({
     data: {
       name: 'Shoufiq Rahman Shifat',
       email: 'admin@blooddonor.org',
-      password: '$2b$10$YourHashedBcryptPasswordSuperAdminSynthetic123',
+      password: defaultPasswordHash,
       role: Role.SUPER_ADMIN,
       phone: '+880 1711-000999',
       avatarUrl: '/admin-photo.png',
@@ -60,7 +64,7 @@ async function main() {
     data: {
       name: 'Dr. Nusrat Parveen',
       email: 'staff@blooddonor.org',
-      password: '$2b$10$YourHashedBcryptPasswordStaffSynthetic123',
+      password: defaultPasswordHash,
       role: Role.STAFF,
       phone: '+880 1822-000888',
       isActive: true,
@@ -71,7 +75,7 @@ async function main() {
     data: {
       name: 'Hospital Coordinator (DMCH)',
       email: 'coordinator@dmch.gov.bd',
-      password: '$2b$10$YourHashedBcryptPasswordCoordinatorSynthetic123',
+      password: defaultPasswordHash,
       role: Role.HOSPITAL_COORDINATOR,
       phone: '+880 1933-000777',
       isActive: true,
@@ -82,7 +86,7 @@ async function main() {
     data: {
       name: 'Volunteer Arif',
       email: 'volunteer@redcrescent.org',
-      password: '$2b$10$YourHashedBcryptPasswordVolunteerSynthetic123',
+      password: defaultPasswordHash,
       role: Role.VOLUNTEER,
       phone: '+880 1644-000666',
       isActive: true,
@@ -94,7 +98,7 @@ async function main() {
     data: {
       name: 'Shoufiq Rahman Shifat',
       email: 'admin@blooddonor.org',
-      password: '$2b$10$YourHashedBcryptPasswordSuperAdminSynthetic123',
+      password: defaultPasswordHash,
       role: 'SuperAdmin',
       avatarUrl: '/admin-photo.png',
     },

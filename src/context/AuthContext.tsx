@@ -15,6 +15,7 @@ export interface UserProfile {
     age: number;
     district: string;
     thana: string;
+    address?: string | null;
     status: string;
     isAvailable: boolean;
     readyForEmergency: boolean;
@@ -39,8 +40,10 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
   updateProfile: (data: {
     name?: string;
+    email?: string;
     phone?: string | null;
     avatarUrl?: string | null;
+    role?: string;
     donor?: any;
   }) => Promise<void>;
   changePassword: (currentPass: string, newPass: string) => Promise<void>;
@@ -106,12 +109,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateProfile = async (data: {
     name?: string;
+    email?: string;
     phone?: string | null;
     avatarUrl?: string | null;
+    role?: string;
     donor?: any;
   }) => {
     const updated = await api.updateProfile(data);
     if (updated) {
+      if (updated.id) {
+        setUser(updated);
+      }
       await fetchCurrentUser();
     }
   };

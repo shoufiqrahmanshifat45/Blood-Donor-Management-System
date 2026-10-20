@@ -47,6 +47,8 @@ export const ErrorBanner: React.FC<{
 }> = ({ message, onRetry, className = '' }) => {
   return (
     <div
+      data-testid="error-banner"
+      role="alert"
       className={`p-3 bg-red-50/90 border border-red-200/80 rounded-xl text-red-800 text-[12px] flex items-center justify-between gap-3 ${className}`}
     >
       <div className="flex items-center gap-2 min-w-0">

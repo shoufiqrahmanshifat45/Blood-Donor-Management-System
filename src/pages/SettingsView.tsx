@@ -31,9 +31,19 @@ import {
   Smartphone,
   ShieldCheck,
   AlertTriangle,
+  MapPin,
+  Droplet,
+  HeartHandshake,
 } from 'lucide-react';
 import { useAdminPhoto } from '../utils/avatarStorage';
-import { HELP_FAQS, INITIAL_DONORS, RECENT_BLOOD_REQUESTS, BLOOD_STOCK_DATA } from '../data/mockData';
+import {
+  HELP_FAQS,
+  INITIAL_DONORS,
+  RECENT_BLOOD_REQUESTS,
+  BLOOD_STOCK_DATA,
+  BANGLADESH_DISTRICTS,
+  BANGLADESH_THANAS,
+} from '../data/mockData';
 import { useTheme } from '../context/ThemeContext';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
@@ -50,13 +60,20 @@ export const SettingsView: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Profile Form (Admin name is editable and synchronized with database)
+  // Profile Form (Admin name, email, phone, location, blood group, donations synchronized with database)
   const [adminProfile, setAdminProfile] = useState({
     name: user?.name || 'Shoufiq Rahman Shifat',
-    role: user?.role ? user.role.replace('_', ' ') : 'System Administrator & Coordinator',
+    role: user?.role || 'SUPER_ADMIN',
     email: user?.email || 'shoufiq.shifat@redpulse.org',
     phone: user?.phone || '+880 1711-892451',
     organization: 'RedPulse Voluntary Blood Network Bangladesh',
     bloodGroup: user?.donorProfile?.bloodGroup || 'B+',
+    district: user?.donorProfile?.district || 'Dhaka',
+    thana: user?.donorProfile?.thana || 'Dhanmondi',
+    address: user?.donorProfile?.address || '',
+    totalDonations: user?.donorProfile?.totalDonations !== undefined ? String(user.donorProfile.totalDonations) : '0',
+    isAvailable: user?.donorProfile?.isAvailable !== false,
+    readyForEmergency: user?.donorProfile?.readyForEmergency !== false,
     bio: 'Lead coordinator overseeing national blood reserve logistics, donor matching algorithms, and emergency dispatch.',
   });
 
@@ -68,8 +85,23 @@ export const SettingsView: React.FC = () => {
         name: user.name || prev.name,
         email: user.email || prev.email,
         phone: user.phone || prev.phone,
-        role: user.role.replace('_', ' '),
-        bloodGroup: user.donorProfile?.bloodGroup || prev.bloodGroup,
+        role: user.role || prev.role,
+        bloodGroup: user.donorProfile?.bloodGroup || prev.bloodGroup || 'B+',
+        district: user.donorProfile?.district || prev.district || 'Dhaka',
+        thana: user.donorProfile?.thana || prev.thana || 'Dhanmondi',
+        address: user.donorProfile?.address || prev.address || '',
+        totalDonations:
+          user.donorProfile?.totalDonations !== undefined
+            ? String(user.donorProfile.totalDonations)
+            : prev.totalDonations,
+        isAvailable:
+          user.donorProfile?.isAvailable !== undefined
+            ? user.donorProfile.isAvailable
+            : prev.isAvailable,
+        readyForEmergency:
+          user.donorProfile?.readyForEmergency !== undefined
+            ? user.donorProfile.readyForEmergency
+            : prev.readyForEmergency,
       }));
     }
   }, [user]);
@@ -152,14 +184,34 @@ export const SettingsView: React.FC = () => {
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!adminProfile.name.trim()) {
+      notifyError('Validation Error', 'Full name is required.');
+      return;
+    }
+    if (!adminProfile.email.trim()) {
+      notifyError('Validation Error', 'Official email is required.');
+      return;
+    }
+
     try {
       if (user) {
         await updateProfile({
           name: adminProfile.name.trim(),
+          email: adminProfile.email.trim().toLowerCase(),
           phone: adminProfile.phone.trim() || null,
+          role: adminProfile.role,
+          donor: {
+            bloodGroup: adminProfile.bloodGroup,
+            district: adminProfile.district,
+            thana: adminProfile.thana,
+            address: adminProfile.address.trim() || null,
+            totalDonations: Math.max(0, parseInt(adminProfile.totalDonations, 10) || 0),
+            isAvailable: adminProfile.isAvailable,
+            readyForEmergency: adminProfile.readyForEmergency,
+          },
         });
       }
-      success('Settings Updated', 'Profile details saved successfully to database.');
+      success('Settings Updated', 'Admin profile, email, blood group, and location saved successfully to database.');
     } catch (err: any) {
       notifyError('Update Failed', err.message || 'Unable to save profile details.');
     }
@@ -384,22 +436,51 @@ export const SettingsView: React.FC = () => {
               <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 {adminProfile.name}
               </h2>
-              <p className="text-xs font-medium text-red-500 dark:text-red-400">
-                {adminProfile.role}
+              <p className="text-xs font-bold uppercase tracking-wider text-red-500 dark:text-red-400">
+                {adminProfile.role ? adminProfile.role.replace('_', ' ') : 'SUPER ADMIN'}
               </p>
               <span className="inline-flex items-center gap-1 mt-1 text-[11px] text-slate-400">
                 <Shield className="w-3 h-3 text-emerald-500" /> Verified Administrator
               </span>
             </div>
 
-            <div className="w-full pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2 text-xs text-left">
+            {/* Detailed Donor & Clinical Summary Badges */}
+            <div className="w-full pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2.5 text-xs text-left">
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">Blood Group:</span>
-                <span className="font-extrabold text-red-600">{adminProfile.bloodGroup}</span>
+                <span className="text-slate-400 flex items-center gap-1.5">
+                  <Droplet className="w-3.5 h-3.5 text-red-500" /> Blood Group:
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-red-100 dark:bg-red-950/80 text-red-600 dark:text-red-400 font-black text-xs">
+                  {adminProfile.bloodGroup}
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">Status:</span>
-                <span className="font-bold text-emerald-600">Active Duty</span>
+                <span className="text-slate-400 flex items-center gap-1.5">
+                  <HeartHandshake className="w-3.5 h-3.5 text-emerald-500" /> Donation Count:
+                </span>
+                <span className="font-extrabold text-slate-800 dark:text-slate-100">
+                  {adminProfile.totalDonations} Donations
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-blue-500" /> Location:
+                </span>
+                <span className="font-bold text-slate-800 dark:text-slate-200 truncate max-w-[150px]" title={`${adminProfile.thana}, ${adminProfile.district}`}>
+                  {adminProfile.thana}, {adminProfile.district}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Donor Status:</span>
+                <span className={`font-bold ${adminProfile.isAvailable ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
+                  {adminProfile.isAvailable ? 'Available' : 'Unavailable'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Emergency Dispatch:</span>
+                <span className={`font-bold ${adminProfile.readyForEmergency ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-500'}`}>
+                  {adminProfile.readyForEmergency ? 'Ready' : 'Standby'}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-slate-400">Dispatch Access:</span>
@@ -410,21 +491,35 @@ export const SettingsView: React.FC = () => {
             </div>
           </div>
 
-          {/* Form (Col 8) */}
-          <div className="lg:col-span-8 bg-white dark:bg-[#0c1527] p-5 rounded-2xl border border-slate-100 dark:border-[#15213b] shadow-xs space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-              Administrator Profile & Contact Information
-            </h3>
-
-            <form onSubmit={handleSaveProfile} className="space-y-3.5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Form & In-Profile Security (Col 8) */}
+          <div className="lg:col-span-8 space-y-4">
+            {/* Section 1: Administrator Profile Details Form */}
+            <div className="bg-white dark:bg-[#0c1527] p-5 rounded-2xl border border-slate-100 dark:border-[#15213b] shadow-xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                    Full Name
-                  </label>
-                  <div className="relative">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <User className="w-4 h-4 text-[#ef4444]" />
+                    Administrator Profile & Contact Information
+                  </h3>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Configure your official administrative credentials and contact records.
+                  </p>
+                </div>
+                <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
+                  Database Synced
+                </span>
+              </div>
+
+              <form onSubmit={handleSaveProfile} className="space-y-4">
+                {/* Name & Role */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                      Full Name *
+                    </label>
                     <input
                       type="text"
+                      required
                       value={adminProfile.name}
                       onChange={(e) =>
                         setAdminProfile({ ...adminProfile, name: e.target.value })
@@ -432,111 +527,369 @@ export const SettingsView: React.FC = () => {
                       className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center justify-between">
+                      <span>Access Role Clearance</span>
+                      <span className="text-[10px] text-amber-500 font-bold">(Authority Level)</span>
+                    </label>
+                    <select
+                      value={adminProfile.role}
+                      onChange={(e) =>
+                        setAdminProfile({ ...adminProfile, role: e.target.value })
+                      }
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                    >
+                      <option value="SUPER_ADMIN">Super Administrator (Full System Authority)</option>
+                      <option value="ADMIN">System Administrator (Administrative Clearance)</option>
+                      <option value="STAFF">Clinical Staff (Medical & Verification)</option>
+                      <option value="HOSPITAL_COORDINATOR">Hospital Coordinator (Emergency Dispatch)</option>
+                      <option value="VOLUNTEER">Field Volunteer (Liaison & Outreach)</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                    Role Title
-                  </label>
-                  <input
-                    type="text"
-                    value={adminProfile.role}
-                    onChange={(e) =>
-                      setAdminProfile({ ...adminProfile, role: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
-                  />
-                </div>
-              </div>
+                {/* Email & Phone */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1 flex items-center justify-between">
+                      <span>Official Email *</span>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                        (Syncs to Login)
+                      </span>
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="email"
+                        required
+                        value={adminProfile.email}
+                        onChange={(e) =>
+                          setAdminProfile({ ...adminProfile, email: e.target.value })
+                        }
+                        className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                        placeholder="admin@blooddonor.org"
+                      />
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                    Official Email
-                  </label>
-                  <input
-                    type="email"
-                    value={adminProfile.email}
-                    onChange={(e) =>
-                      setAdminProfile({ ...adminProfile, email: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                    Phone Number
-                  </label>
-                  <input
-                    type="text"
-                    value={adminProfile.phone}
-                    onChange={(e) =>
-                      setAdminProfile({ ...adminProfile, phone: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                    Organization / Unit
-                  </label>
-                  <input
-                    type="text"
-                    value={adminProfile.organization}
-                    onChange={(e) =>
-                      setAdminProfile({ ...adminProfile, organization: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
-                  />
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                      Phone Number *
+                    </label>
+                    <div className="relative">
+                      <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="tel"
+                        value={adminProfile.phone}
+                        onChange={(e) =>
+                          setAdminProfile({ ...adminProfile, phone: e.target.value })
+                        }
+                        className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                        placeholder="+880 1711-XXXXXX"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                    Blood Group
-                  </label>
-                  <select
-                    value={adminProfile.bloodGroup}
-                    onChange={(e) =>
-                      setAdminProfile({ ...adminProfile, bloodGroup: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-red-600 dark:text-red-400 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                {/* Linked Blood Donor & Clinical Section (Member Profile Parity) */}
+                <div className="p-4 rounded-xl bg-red-50/50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-red-900 dark:text-red-300 flex items-center gap-1.5">
+                      <Droplet className="w-4 h-4 text-red-500" />
+                      Linked Blood Donor & Clinical Profile
+                    </h4>
+                    <span className="text-[10px] text-red-600 dark:text-red-400 font-medium">
+                      Registered in Voluntary Network
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Blood Group *
+                      </label>
+                      <select
+                        value={adminProfile.bloodGroup}
+                        onChange={(e) =>
+                          setAdminProfile({ ...adminProfile, bloodGroup: e.target.value })
+                        }
+                        className="w-full px-3 py-2 bg-white dark:bg-[#131d33] border border-red-200 dark:border-red-900/40 rounded-xl text-xs font-extrabold text-red-600 dark:text-red-400 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                      >
+                        {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((bg) => (
+                          <option key={bg} value={bg}>
+                            {bg}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                        Donation Count (Lifetime Total)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="200"
+                        value={adminProfile.totalDonations}
+                        onChange={(e) =>
+                          setAdminProfile({
+                            ...adminProfile,
+                            totalDonations: e.target.value,
+                          })
+                        }
+                        className="w-full px-3 py-2 bg-white dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Donor Availability Toggles */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <label className="flex items-center gap-2 p-2.5 rounded-lg bg-white dark:bg-[#0c1527] border border-red-100 dark:border-red-900/30 cursor-pointer text-xs">
+                      <input
+                        type="checkbox"
+                        checked={adminProfile.isAvailable}
+                        onChange={(e) =>
+                          setAdminProfile({
+                            ...adminProfile,
+                            isAvailable: e.target.checked,
+                          })
+                        }
+                        className="w-4 h-4 rounded text-red-600 focus:ring-red-500 accent-red-600"
+                      />
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">
+                        Available for Direct Blood Donation
+                      </span>
+                    </label>
+
+                    <label className="flex items-center gap-2 p-2.5 rounded-lg bg-white dark:bg-[#0c1527] border border-red-100 dark:border-red-900/30 cursor-pointer text-xs">
+                      <input
+                        type="checkbox"
+                        checked={adminProfile.readyForEmergency}
+                        onChange={(e) =>
+                          setAdminProfile({
+                            ...adminProfile,
+                            readyForEmergency: e.target.checked,
+                          })
+                        }
+                        className="w-4 h-4 rounded text-red-600 focus:ring-red-500 accent-red-600"
+                      />
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">
+                        Enlisted for Critical Emergency Alerts
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Location & Regional Coverage Section */}
+                <div className="space-y-3 pt-1">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+                    <MapPin className="w-4 h-4 text-blue-500" />
+                    Administrative Jurisdiction & Location
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                        District *
+                      </label>
+                      <select
+                        value={adminProfile.district}
+                        onChange={(e) => {
+                          const newDistrict = e.target.value;
+                          const thanas = BANGLADESH_THANAS[newDistrict] || ['Central', 'North', 'South', 'East', 'West'];
+                          setAdminProfile({
+                            ...adminProfile,
+                            district: newDistrict,
+                            thana: thanas[0] || 'Central',
+                          });
+                        }}
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                      >
+                        {BANGLADESH_DISTRICTS.map((d: string) => (
+                          <option key={d} value={d}>
+                            {d}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                        Thana / Upazila *
+                      </label>
+                      <select
+                        value={adminProfile.thana}
+                        onChange={(e) =>
+                          setAdminProfile({ ...adminProfile, thana: e.target.value })
+                        }
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                      >
+                        {(BANGLADESH_THANAS[adminProfile.district] || ['Central', 'North', 'South', 'East', 'West']).map(
+                          (t: string) => (
+                            <option key={t} value={t}>
+                              {t}
+                            </option>
+                          )
+                        )}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                      Hospital / Clinic / Workstation Address
+                    </label>
+                    <input
+                      type="text"
+                      value={adminProfile.address}
+                      onChange={(e) =>
+                        setAdminProfile({ ...adminProfile, address: e.target.value })
+                      }
+                      placeholder="e.g. Block C, National Blood Center, Dhaka Medical College Hospital"
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Organization & Bio */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                      Organization / Operating Unit
+                    </label>
+                    <input
+                      type="text"
+                      value={adminProfile.organization}
+                      onChange={(e) =>
+                        setAdminProfile({ ...adminProfile, organization: e.target.value })
+                      }
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                      Bio / Key Responsibilities
+                    </label>
+                    <input
+                      type="text"
+                      value={adminProfile.bio}
+                      onChange={(e) =>
+                        setAdminProfile({ ...adminProfile, bio: e.target.value })
+                      }
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-3 border-t border-slate-100 dark:border-slate-800">
+                  <button
+                    type="submit"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#ef4444] hover:bg-[#dc2626] text-white text-xs font-bold rounded-xl shadow-md shadow-red-500/25 transition-all"
                   >
-                    {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map((bg) => (
-                      <option key={bg} value={bg}>
-                        {bg}
-                      </option>
-                    ))}
-                  </select>
+                    <Save className="w-4 h-4" /> Save Profile Details
+                  </button>
                 </div>
+              </form>
+            </div>
+
+            {/* Section 2: In-Profile Direct Password Change Option */}
+            <div className="bg-white dark:bg-[#0c1527] p-5 rounded-2xl border border-slate-100 dark:border-[#15213b] shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                    <KeyRound className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                      Change Administrative Password
+                    </h3>
+                    <p className="text-[11px] text-slate-400">
+                      Update your account password securely from your profile settings.
+                    </p>
+                  </div>
+                </div>
+                <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">
+                  Min 6 characters
+                </span>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                  Bio / Responsibilities
-                </label>
-                <textarea
-                  rows={3}
-                  value={adminProfile.bio}
-                  onChange={(e) =>
-                    setAdminProfile({ ...adminProfile, bio: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20 resize-none"
-                />
-              </div>
+              <form onSubmit={handlePasswordUpdate} className="space-y-3.5">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                    Current Password *
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type={showPasswords ? 'text' : 'password'}
+                      required
+                      value={passwordForm.currentPassword}
+                      onChange={(e) =>
+                        setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
+                      }
+                      placeholder="Enter existing password"
+                      className="w-full pl-9 pr-10 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswords(!showPasswords)}
+                      className="p-1 text-slate-400 hover:text-slate-600 absolute right-2.5 top-1/2 -translate-y-1/2"
+                    >
+                      {showPasswords ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                </div>
 
-              <div className="flex justify-end pt-2">
-                <button
-                  type="submit"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#ef4444] hover:bg-[#dc2626] text-white text-xs font-semibold rounded-xl shadow-md shadow-red-500/20 transition-all"
-                >
-                  <Save className="w-3.5 h-3.5" /> Save Profile Details
-                </button>
-              </div>
-            </form>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                      New Password *
+                    </label>
+                    <input
+                      type={showPasswords ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      value={passwordForm.newPassword}
+                      onChange={(e) =>
+                        setPasswordForm({ ...passwordForm, newPassword: e.target.value })
+                      }
+                      placeholder="Min 6 characters"
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                      Confirm New Password *
+                    </label>
+                    <input
+                      type={showPasswords ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) =>
+                        setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
+                      }
+                      placeholder="Re-type new password"
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-[#131d33] border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="submit"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors"
+                  >
+                    <KeyRound className="w-3.5 h-3.5" /> Update Administrative Password
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

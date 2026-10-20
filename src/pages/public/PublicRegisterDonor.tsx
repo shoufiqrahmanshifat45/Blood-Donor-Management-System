@@ -78,7 +78,7 @@ export const PublicRegisterDonor: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      await api.createDonor({
+      const created = await api.createDonor({
         name: name.trim(),
         bloodGroup,
         gender,

@@ -168,7 +168,7 @@ export class AuthController {
    */
   async getDevCode(req: Request, res: Response, next: NextFunction) {
     try {
-      if (process.env.NODE_ENV !== 'development') {
+      if (process.env.NODE_ENV === 'production') {
         return res.status(404).json({ success: false, error: 'Endpoint not found.' });
       }
       const { verificationService } = await import('../services/verification.service.js');

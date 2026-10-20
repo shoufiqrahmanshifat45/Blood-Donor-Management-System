@@ -50,8 +50,13 @@ export class VerificationService {
       throw new ForbiddenError('This organization account has been deactivated. Please contact your system administrator.');
     }
 
-    // 2. Validate password
-    const isMatch = await bcrypt.compare(data.password, user.password);
+    // 2. Validate password safely
+    let isMatch = false;
+    try {
+      isMatch = await bcrypt.compare(data.password, user.password);
+    } catch {
+      isMatch = false;
+    }
     if (!isMatch) {
       throw new UnauthorizedError('Invalid account credentials.');
     }
@@ -63,7 +68,7 @@ export class VerificationService {
       );
     }
 
-    // 4. Rate-limiting verification challenges: Max 5 challenges per 15 minutes
+    // 4. Rate-limiting verification challenges: Max 5 challenges per 15 minutes in production (50 in dev/test)
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
     const recentChallengeCount = await prisma.verificationChallenge.count({
       where: {
@@ -73,7 +78,8 @@ export class VerificationService {
       },
     });
 
-    if (recentChallengeCount >= 5) {
+    const maxChallenges = env.NODE_ENV === 'production' ? 5 : 50;
+    if (recentChallengeCount >= maxChallenges) {
       throw new BadRequestError('Too many verification requests. Please wait a few minutes before trying again.');
     }
 
@@ -104,8 +110,8 @@ export class VerificationService {
       },
     });
 
-    // In dev environment, store raw code in memory for programmatic test scripts (NEVER in API response)
-    if (env.NODE_ENV === 'development') {
+    // In dev / test environment, store raw code in memory for programmatic test scripts (NEVER in API response)
+    if (env.NODE_ENV !== 'production') {
       devCodeMemory.set(challenge.id, rawCode);
     }
 
@@ -345,7 +351,7 @@ export class VerificationService {
    * Internal dev helper for integration test scripts only
    */
   getDevCodeForTest(challengeId: string): string | null {
-    if (env.NODE_ENV !== 'development') return null;
+    if (env.NODE_ENV === 'production') return null;
     return devCodeMemory.get(challengeId) || null;
   }
 }

@@ -25,6 +25,11 @@ export const AuthPage: React.FC<{ initialMode?: 'login' | 'signup' }> = ({ initi
   const navigate = useNavigate();
   const location = useLocation();
 
+  React.useEffect(() => {
+    setMode(initialMode);
+    setFormError(null);
+  }, [initialMode]);
+
   // If already authenticated, redirect
   React.useEffect(() => {
     if (isAuthenticated) {

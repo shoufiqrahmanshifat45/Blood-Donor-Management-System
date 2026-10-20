@@ -225,6 +225,51 @@ export class DonorsService {
       where: { phone: data.phone.trim() },
     });
     if (existingPhone) {
+      if (currentUser && existingPhone.userId === currentUser.id) {
+        throw new ConflictError('You already have an active donor profile with this phone number. You can update it in your profile settings.');
+      }
+      // If the donor profile was registered as a guest (userId is null) and current user has no profile
+      if (currentUser && !existingPhone.userId) {
+        const userHasDonor = await prisma.donor.findUnique({ where: { userId: currentUser.id } });
+        if (!userHasDonor) {
+          const updated = await prisma.donor.update({
+            where: { id: existingPhone.id },
+            data: {
+              userId: currentUser.id,
+              name: data.name.trim(),
+              bloodGroup: toPrismaBloodGroup(data.bloodGroup),
+              gender: toPrismaGender(data.gender),
+              age: data.age,
+              email: data.email?.trim() || currentUser.email || existingPhone.email,
+              district: data.district.trim(),
+              thana: data.thana.trim(),
+              address: data.address?.trim() || existingPhone.address,
+              weightKg: data.weightKg || existingPhone.weightKg,
+              lastDonationDate: data.lastDonationDate ? new Date(data.lastDonationDate) : existingPhone.lastDonationDate,
+              totalDonations: data.totalDonations !== undefined ? Math.max(0, parseInt(String(data.totalDonations), 10) || 0) : existingPhone.totalDonations,
+              isAvailable: data.isAvailable !== undefined ? data.isAvailable : existingPhone.isAvailable,
+              readyForEmergency: data.readyForEmergency !== undefined ? data.readyForEmergency : existingPhone.readyForEmergency,
+            },
+          });
+          return {
+            id: updated.id,
+            name: updated.name,
+            bloodGroup: fromPrismaBloodGroup(updated.bloodGroup),
+            gender: fromPrismaGender(updated.gender),
+            age: updated.age,
+            phone: updated.phone,
+            email: updated.email,
+            district: updated.district,
+            thana: updated.thana,
+            totalDonations: updated.totalDonations,
+            lastDonationDate: updated.lastDonationDate ? updated.lastDonationDate.toISOString() : null,
+            status: fromPrismaDonorStatus(updated.status),
+            isAvailable: updated.isAvailable,
+            readyForEmergency: updated.readyForEmergency,
+            createdAt: updated.createdAt.toISOString(),
+          };
+        }
+      }
       throw new ConflictError('A donor profile with this phone number already exists.');
     }
 
@@ -234,12 +279,10 @@ export class DonorsService {
       const existingProfile = await prisma.donor.findUnique({
         where: { userId: currentUser.id },
       });
-      if (existingProfile && currentUser.role === Role.DONOR) {
+      if (existingProfile) {
         throw new ConflictError('You already have an active donor profile linked to your account.');
       }
-      if (!existingProfile && currentUser.role === Role.DONOR) {
-        userIdToLink = currentUser.id;
-      }
+      userIdToLink = currentUser.id;
     }
 
     const created = await prisma.donor.create({

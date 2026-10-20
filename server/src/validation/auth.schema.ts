@@ -36,8 +36,10 @@ export const resetPasswordSchema = z.object({
 
 export const updateProfileSchema = z.object({
   name: z.string().trim().min(2).max(100).optional(),
+  email: z.string().trim().email('Invalid email address format').toLowerCase().optional(),
   phone: z.string().trim().regex(/^\+?[0-9\s-]{7,20}$/, 'Invalid phone number format').optional().nullable(),
   avatarUrl: z.string().optional().nullable(),
+  role: z.enum(['SUPER_ADMIN', 'ADMIN', 'STAFF', 'VOLUNTEER', 'DONOR', 'HOSPITAL_COORDINATOR']).optional(),
   donor: z
     .object({
       bloodGroup: z.string().optional(),
@@ -45,6 +47,7 @@ export const updateProfileSchema = z.object({
       gender: z.string().optional(),
       district: z.string().optional(),
       thana: z.string().optional(),
+      address: z.string().optional().nullable(),
       totalDonations: z.coerce.number().int().min(0).max(500).optional(),
       readyForEmergency: z.boolean().optional(),
       isAvailable: z.boolean().optional(),

@@ -431,6 +431,10 @@ export const api = {
    */
   async getCurrentUser(): Promise<any | null> {
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('bdms_token') : null;
+      if (!token) {
+        return null;
+      }
       return await request<any>('/auth/me');
     } catch {
       return null;
@@ -442,14 +446,17 @@ export const api = {
    */
   async updateProfile(data: {
     name?: string;
+    email?: string;
     phone?: string | null;
     avatarUrl?: string | null;
+    role?: string;
     donor?: {
       bloodGroup?: string;
       gender?: string;
       age?: number;
       district?: string;
       thana?: string;
+      address?: string | null;
       totalDonations?: number;
       readyForEmergency?: boolean;
       isAvailable?: boolean;

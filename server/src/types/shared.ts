@@ -174,17 +174,16 @@ export interface ApiResponse<T> {
 // ==========================================
 
 export const toPrismaBloodGroup = (bg: string): PrismaBloodGroup => {
-  const map: Record<string, PrismaBloodGroup> = {
-    'A+': PrismaBloodGroup.A_POS,
-    'A-': PrismaBloodGroup.A_NEG,
-    'B+': PrismaBloodGroup.B_POS,
-    'B-': PrismaBloodGroup.B_NEG,
-    'AB+': PrismaBloodGroup.AB_POS,
-    'AB-': PrismaBloodGroup.AB_NEG,
-    'O+': PrismaBloodGroup.O_POS,
-    'O-': PrismaBloodGroup.O_NEG,
-  };
-  return map[bg] || PrismaBloodGroup.O_POS;
+  const normalized = (bg || '').trim().toUpperCase();
+  if (normalized === 'A+' || normalized === 'A_POS' || normalized === 'A_POSITIVE') return PrismaBloodGroup.A_POS;
+  if (normalized === 'A-' || normalized === 'A_NEG' || normalized === 'A_NEGATIVE') return PrismaBloodGroup.A_NEG;
+  if (normalized === 'B+' || normalized === 'B_POS' || normalized === 'B_POSITIVE') return PrismaBloodGroup.B_POS;
+  if (normalized === 'B-' || normalized === 'B_NEG' || normalized === 'B_NEGATIVE') return PrismaBloodGroup.B_NEG;
+  if (normalized === 'AB+' || normalized === 'AB_POS' || normalized === 'AB_POSITIVE') return PrismaBloodGroup.AB_POS;
+  if (normalized === 'AB-' || normalized === 'AB_NEG' || normalized === 'AB_NEGATIVE') return PrismaBloodGroup.AB_NEG;
+  if (normalized === 'O+' || normalized === 'O_POS' || normalized === 'O_POSITIVE') return PrismaBloodGroup.O_POS;
+  if (normalized === 'O-' || normalized === 'O_NEG' || normalized === 'O_NEGATIVE') return PrismaBloodGroup.O_NEG;
+  return PrismaBloodGroup.O_POS;
 };
 
 export const fromPrismaBloodGroup = (bg: PrismaBloodGroup): BloodGroup => {
@@ -202,8 +201,9 @@ export const fromPrismaBloodGroup = (bg: PrismaBloodGroup): BloodGroup => {
 };
 
 export const toPrismaGender = (g: string): PrismaGender => {
-  if (g.toLowerCase() === 'female') return PrismaGender.FEMALE;
-  if (g.toLowerCase() === 'other') return PrismaGender.OTHER;
+  const lower = (g || '').trim().toLowerCase();
+  if (lower === 'female') return PrismaGender.FEMALE;
+  if (lower === 'other') return PrismaGender.OTHER;
   return PrismaGender.MALE;
 };
 

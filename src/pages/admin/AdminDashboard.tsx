@@ -192,6 +192,14 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
+        {error && (
+          <ErrorBanner
+            message={`Dashboard sync notice: ${error}`}
+            onRetry={refresh}
+            className="mb-2 shadow-xs"
+          />
+        )}
+
         {/* Row 1: 4 Stat Cards */}
         {loading && !data ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">

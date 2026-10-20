@@ -7,8 +7,14 @@ import { getAdminToken, getDonorToken } from './testHelper.js';
 describe('Donations Recording & Inventory Verification Endpoints', () => {
   let donorId: string = '';
 
-  test('GET /api/donations returns donation logs', async () => {
+  test('GET /api/donations rejects unauthenticated request with 401', async () => {
     const res = await request(app).get('/api/donations');
+    assert.equal(res.status, 401);
+  });
+
+  test('GET /api/donations returns donation logs for authenticated user', async () => {
+    const { token } = await getDonorToken();
+    const res = await request(app).get('/api/donations').set('Authorization', `Bearer ${token}`);
     assert.equal(res.status, 200);
     assert.equal(res.body.success, true);
     assert.ok(Array.isArray(res.body.data));
